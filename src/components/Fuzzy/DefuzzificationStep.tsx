@@ -200,7 +200,7 @@ export const DefuzzificationStep: React.FC = () => {
           <MembershipChart
             title="Output Membership Functions"
             universe={results.universe}
-            membershipFunctions={results.membership_functions}
+            membershipFunctions={results.membership_functions as any}
             inputValue={results.crisp_output}
             parameterName={results.output_parameter.name}
             unit={results.output_parameter.unit}

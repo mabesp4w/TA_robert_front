@@ -48,7 +48,7 @@ const Sidebar = () => {
       active: pathName.startsWith("/admin/pemeriksaan"),
     },
     {
-      title: "Analisis Fuzzy",
+      title: "Fuzzy Mamdani",
       icon: BeakerIcon,
       href: "/admin/fuzzy",
       active: pathName.startsWith("/admin/fuzzy"),

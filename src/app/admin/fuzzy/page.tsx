@@ -1,467 +1,385 @@
 /** @format */
 
-// app/fuzzy-calculation/page.tsx
+// app/fuzzy/page.tsx
 "use client";
 
-import React, { useState } from "react";
-import { useFuzzyCalculationStore } from "@/stores/api/fuzzyCalculationStore";
-import { FuzzificationStep } from "@/components/Fuzzy/FuzzificationStep";
-import { InferenceStep } from "@/components/Fuzzy/InferenceStep";
-import { DefuzzificationStep } from "@/components/Fuzzy/DefuzzificationStep";
-import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
-import { ManualInputForm } from "@/types/fuzzy";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import {
+  Settings,
+  Sliders,
+  GitBranch,
+  CheckCircle,
+  AlertCircle,
+  Plus,
+  ArrowRight,
+} from "lucide-react";
+import { Button } from "@/components/UI/Button";
+import LoadingSpinner from "@/components/UI/LoadingSpinner";
+import {
+  parameterFuzzyCRUD,
+  fungsiKeanggotaanCRUD,
+  aturanFuzzyCRUD,
+} from "@/services/fuzzyService";
 
-export default function FuzzyCalculationPage() {
-  const {
-    completeFlowData,
-    loading,
-    error,
-    currentStep,
-    setInputData,
-    setPemeriksaanId,
-    setCurrentStep,
-    calculateCompleteFlow,
-    resetCalculation,
-  } = useFuzzyCalculationStore();
-
-  const [showInputForm, setShowInputForm] = useState(true);
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<ManualInputForm>();
-
-  const onSubmitManual = (data: ManualInputForm) => {
-    setInputData(data as any);
-    setPemeriksaanId(null);
-    handleCalculate();
+interface DashboardStats {
+  parameters: {
+    total: number;
+    aktif: number;
+    input: number;
+    output: number;
   };
+  fungsi: {
+    total: number;
+    aktif: number;
+    triangular: number;
+    trapezoidal: number;
+    gaussian: number;
+  };
+  aturan: {
+    total: number;
+    aktif: number;
+    rataRataBobot: number;
+    penyakitTercakup: number;
+  };
+}
 
-  const handleCalculate = async () => {
+export default function FuzzyDashboard() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardStats();
+  }, []);
+
+  const fetchDashboardStats = async () => {
     try {
-      await calculateCompleteFlow();
-      setShowInputForm(false);
-      toast.success("Fuzzy calculation completed successfully!");
+      setLoading(true);
+
+      // Fetch all statistics in parallel
+      const [paramStats, fungsiStats, aturanStats] = await Promise.all([
+        parameterFuzzyCRUD.getStatistik(),
+        fungsiKeanggotaanCRUD.getStatistik(),
+        aturanFuzzyCRUD.getStatistik(),
+      ]);
+
+      setStats({
+        parameters: {
+          total: paramStats.data?.total_parameter || 0,
+          aktif: paramStats.data?.parameter_aktif || 0,
+          input: paramStats.data?.distribusi_tipe?.input || 0,
+          output: paramStats.data?.distribusi_tipe?.output || 0,
+        },
+        fungsi: {
+          total: fungsiStats.data?.total_fungsi || 0,
+          aktif: fungsiStats.data?.fungsi_aktif || 0,
+          triangular: fungsiStats.data?.distribusi_tipe_fungsi?.trimf || 0,
+          trapezoidal: fungsiStats.data?.distribusi_tipe_fungsi?.trapmf || 0,
+          gaussian: fungsiStats.data?.distribusi_tipe_fungsi?.gaussmf || 0,
+        },
+        aturan: {
+          total: aturanStats.data?.total_aturan || 0,
+          aktif: aturanStats.data?.aturan_aktif || 0,
+          rataRataBobot: aturanStats.data?.statistik_bobot?.rata_rata || 0,
+          penyakitTercakup: aturanStats.data?.distribusi_penyakit?.length || 0,
+        },
+      });
     } catch (error) {
-      console.log({ error });
-      toast.error("Calculation failed. Please check your inputs.");
+      console.error("Error fetching dashboard stats:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleReset = () => {
-    resetCalculation();
-    reset();
-    setShowInputForm(true);
-    setCurrentStep(1);
-    toast("Calculation reset");
+  if (loading) {
+    return <LoadingSpinner size="lg" />;
+  }
+
+  const getSystemHealthStatus = () => {
+    if (!stats)
+      return { status: "unknown", message: "Tidak dapat memuat data" };
+
+    const hasParameters = stats.parameters.total > 0;
+    const hasFungsi = stats.fungsi.total > 0;
+    const hasAturan = stats.aturan.total > 0;
+
+    if (hasParameters && hasFungsi && hasAturan) {
+      const activeRatio =
+        (stats.parameters.aktif + stats.fungsi.aktif + stats.aturan.aktif) /
+        (stats.parameters.total + stats.fungsi.total + stats.aturan.total);
+
+      if (activeRatio > 0.8) {
+        return { status: "excellent", message: "Sistem berjalan optimal" };
+      } else if (activeRatio > 0.6) {
+        return { status: "good", message: "Sistem berjalan baik" };
+      } else {
+        return { status: "warning", message: "Beberapa komponen tidak aktif" };
+      }
+    } else {
+      return { status: "incomplete", message: "Sistem belum lengkap" };
+    }
   };
 
-  const steps = [
-    { id: 1, name: "Fuzzification", component: FuzzificationStep },
-    { id: 2, name: "Inference", component: InferenceStep },
-    { id: 3, name: "Defuzzification", component: DefuzzificationStep },
+  const systemHealth = getSystemHealthStatus();
+
+  const quickActions = [
+    {
+      title: "Tambah Parameter",
+      description: "Buat parameter fuzzy baru",
+      href: "/admin/fuzzy/parameter",
+      icon: Settings,
+      color: "btn-primary",
+    },
+    {
+      title: "Atur Fungsi",
+      description: "Definisikan fungsi keanggotaan",
+      href: "/admin/fuzzy/fungsi-keanggotaan",
+      icon: Sliders,
+      color: "btn-secondary",
+    },
+    {
+      title: "Buat Aturan",
+      description: "Tambah aturan inferensi",
+      href: "/admin/fuzzy/aturan",
+      icon: GitBranch,
+      color: "btn-accent",
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-base-200 p-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-base-content mb-2">
-            Fuzzy Mamdani Calculation
-          </h1>
-          <p className="text-lg text-base-content/70">
-            Step-by-step fuzzy logic calculation for cattle disease diagnosis
-          </p>
+    <div className="space-y-6">
+      {/* System Health Overview */}
+      <div className="bg-base-100 rounded-lg border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Status Sistem Fuzzy</h2>
+          <div
+            className={`badge ${
+              systemHealth.status === "excellent"
+                ? "badge-success"
+                : systemHealth.status === "good"
+                ? "badge-success"
+                : systemHealth.status === "warning"
+                ? "badge-warning"
+                : "badge-error"
+            }`}
+          >
+            {systemHealth.status === "excellent" && (
+              <CheckCircle className="w-4 h-4 mr-1" />
+            )}
+            {systemHealth.status === "good" && (
+              <CheckCircle className="w-4 h-4 mr-1" />
+            )}
+            {systemHealth.status === "warning" && (
+              <AlertCircle className="w-4 h-4 mr-1" />
+            )}
+            {systemHealth.status === "incomplete" && (
+              <AlertCircle className="w-4 h-4 mr-1" />
+            )}
+            {systemHealth.message}
+          </div>
         </div>
 
-        {/* Input Form */}
-        {showInputForm && (
-          <div className="card bg-base-100 shadow-lg mb-8">
-            <div className="card-body">
-              <form
-                onSubmit={handleSubmit(onSubmitManual)}
-                className="space-y-6"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {/* Suhu Tubuh */}
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Suhu Tubuh (°C)</span>
-                    </label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="35"
-                      max="45"
-                      className={`input input-bordered ${
-                        errors.suhu_tubuh ? "input-error" : ""
-                      }`}
-                      placeholder="38.5"
-                      {...register("suhu_tubuh", {
-                        required: "Suhu tubuh wajib diisi",
-                        min: { value: 35, message: "Minimal 35°C" },
-                        max: { value: 45, message: "Maksimal 45°C" },
-                      })}
-                    />
-                    {errors.suhu_tubuh && (
-                      <label className="label">
-                        <span className="label-text-alt text-error">
-                          {errors.suhu_tubuh.message}
-                        </span>
-                      </label>
-                    )}
-                  </div>
-
-                  {/* Nafsu Makan */}
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Nafsu Makan (0-10)</span>
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="10"
-                      className={`input input-bordered ${
-                        errors.nafsu_makan ? "input-error" : ""
-                      }`}
-                      placeholder="7"
-                      {...register("nafsu_makan", {
-                        required: "Nafsu makan wajib diisi",
-                        min: { value: 0, message: "Minimal 0" },
-                        max: { value: 10, message: "Maksimal 10" },
-                      })}
-                    />
-                    {errors.nafsu_makan && (
-                      <label className="label">
-                        <span className="label-text-alt text-error">
-                          {errors.nafsu_makan.message}
-                        </span>
-                      </label>
-                    )}
-                  </div>
-
-                  {/* Aktivitas */}
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Aktivitas (0-10)</span>
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="10"
-                      className={`input input-bordered ${
-                        errors.aktivitas ? "input-error" : ""
-                      }`}
-                      placeholder="8"
-                      {...register("aktivitas", {
-                        required: "Aktivitas wajib diisi",
-                        min: { value: 0, message: "Minimal 0" },
-                        max: { value: 10, message: "Maksimal 10" },
-                      })}
-                    />
-                    {errors.aktivitas && (
-                      <label className="label">
-                        <span className="label-text-alt text-error">
-                          {errors.aktivitas.message}
-                        </span>
-                      </label>
-                    )}
-                  </div>
-
-                  {/* Frekuensi Napas */}
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">
-                        Frekuensi Napas (/menit)
-                      </span>
-                    </label>
-                    <input
-                      type="number"
-                      min="10"
-                      max="60"
-                      className={`input input-bordered ${
-                        errors.frekuensi_napas ? "input-error" : ""
-                      }`}
-                      placeholder="24"
-                      {...register("frekuensi_napas", {
-                        required: "Frekuensi napas wajib diisi",
-                        min: { value: 10, message: "Minimal 10/menit" },
-                        max: { value: 60, message: "Maksimal 60/menit" },
-                      })}
-                    />
-                    {errors.frekuensi_napas && (
-                      <label className="label">
-                        <span className="label-text-alt text-error">
-                          {errors.frekuensi_napas.message}
-                        </span>
-                      </label>
-                    )}
-                  </div>
-
-                  {/* Denyut Jantung */}
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">
-                        Denyut Jantung (/menit)
-                      </span>
-                    </label>
-                    <input
-                      type="number"
-                      min="40"
-                      max="120"
-                      className={`input input-bordered ${
-                        errors.denyut_jantung ? "input-error" : ""
-                      }`}
-                      placeholder="72"
-                      {...register("denyut_jantung", {
-                        required: "Denyut jantung wajib diisi",
-                        min: { value: 40, message: "Minimal 40/menit" },
-                        max: { value: 120, message: "Maksimal 120/menit" },
-                      })}
-                    />
-                    {errors.denyut_jantung && (
-                      <label className="label">
-                        <span className="label-text-alt text-error">
-                          {errors.denyut_jantung.message}
-                        </span>
-                      </label>
-                    )}
-                  </div>
-
-                  {/* Kondisi Mata */}
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Kondisi Mata (0-10)</span>
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="10"
-                      className={`input input-bordered ${
-                        errors.kondisi_mata ? "input-error" : ""
-                      }`}
-                      placeholder="8"
-                      {...register("kondisi_mata", {
-                        required: "Kondisi mata wajib diisi",
-                        min: { value: 0, message: "Minimal 0" },
-                        max: { value: 10, message: "Maksimal 10" },
-                      })}
-                    />
-                    {errors.kondisi_mata && (
-                      <label className="label">
-                        <span className="label-text-alt text-error">
-                          {errors.kondisi_mata.message}
-                        </span>
-                      </label>
-                    )}
-                  </div>
-
-                  {/* Kondisi Hidung */}
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Kondisi Hidung (0-10)</span>
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="10"
-                      className={`input input-bordered ${
-                        errors.kondisi_hidung ? "input-error" : ""
-                      }`}
-                      placeholder="7"
-                      {...register("kondisi_hidung", {
-                        required: "Kondisi hidung wajib diisi",
-                        min: { value: 0, message: "Minimal 0" },
-                        max: { value: 10, message: "Maksimal 10" },
-                      })}
-                    />
-                    {errors.kondisi_hidung && (
-                      <label className="label">
-                        <span className="label-text-alt text-error">
-                          {errors.kondisi_hidung.message}
-                        </span>
-                      </label>
-                    )}
-                  </div>
-
-                  {/* Konsistensi Feses */}
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">
-                        Konsistensi Feses (0-10)
-                      </span>
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="10"
-                      className={`input input-bordered ${
-                        errors.konsistensi_feses ? "input-error" : ""
-                      }`}
-                      placeholder="6"
-                      {...register("konsistensi_feses", {
-                        required: "Konsistensi feses wajib diisi",
-                        min: { value: 0, message: "Minimal 0" },
-                        max: { value: 10, message: "Maksimal 10" },
-                      })}
-                    />
-                    {errors.konsistensi_feses && (
-                      <label className="label">
-                        <span className="label-text-alt text-error">
-                          {errors.konsistensi_feses.message}
-                        </span>
-                      </label>
-                    )}
-                  </div>
-
-                  {/* Produksi Susu */}
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Produksi Susu (L/hari)</span>
-                    </label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="50"
-                      className={`input input-bordered ${
-                        errors.produksi_susu ? "input-error" : ""
-                      }`}
-                      placeholder="15.5"
-                      {...register("produksi_susu", {
-                        required: "Produksi susu wajib diisi",
-                        min: { value: 0, message: "Minimal 0" },
-                        max: { value: 50, message: "Maksimal 50" },
-                      })}
-                    />
-                    {errors.produksi_susu && (
-                      <label className="label">
-                        <span className="label-text-alt text-error">
-                          {errors.produksi_susu.message}
-                        </span>
-                      </label>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex gap-4 justify-end">
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() => reset()}
-                  >
-                    Reset Form
-                  </button>
-                  <button
-                    type="submit"
-                    className={`btn btn-primary ${loading ? "loading" : ""}`}
-                    disabled={loading}
-                  >
-                    {loading ? "Calculating..." : "Calculate Fuzzy"}
-                  </button>
-                </div>
-              </form>
+        {/* Main Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Parameters Card */}
+          <div className="stat bg-base-200 rounded-lg">
+            <div className="stat-figure text-primary">
+              <Settings className="w-8 h-8" />
+            </div>
+            <div className="stat-title">Parameter Fuzzy</div>
+            <div className="stat-value text-primary">
+              {stats?.parameters.total || 0}
+            </div>
+            <div className="stat-desc">
+              {stats?.parameters.aktif || 0} aktif dari{" "}
+              {stats?.parameters.total || 0} total
             </div>
           </div>
-        )}
 
-        {/* Error Display */}
-        {error && (
-          <div className="alert alert-error mb-6">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="stroke-current shrink-0 h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span>{error}</span>
-            <button className="btn btn-sm btn-ghost" onClick={handleReset}>
-              Try Again
-            </button>
+          {/* Functions Card */}
+          <div className="stat bg-base-200 rounded-lg">
+            <div className="stat-figure text-secondary">
+              <Sliders className="w-8 h-8" />
+            </div>
+            <div className="stat-title">Fungsi Keanggotaan</div>
+            <div className="stat-value text-secondary">
+              {stats?.fungsi.total || 0}
+            </div>
+            <div className="stat-desc">
+              {stats?.fungsi.aktif || 0} aktif dari {stats?.fungsi.total || 0}{" "}
+              total
+            </div>
           </div>
-        )}
 
-        {/* Results Section */}
-        {completeFlowData && !showInputForm && (
-          <>
-            {/* Step Navigation */}
-            <div className="card bg-base-100 shadow-md mb-6">
-              <div className="card-body">
-                <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
-                  <div className="steps steps-horizontal">
-                    {steps.map((step) => (
-                      <button
-                        key={step.id}
-                        className={`step ${
-                          currentStep >= step.id ? "step-primary" : ""
-                        }`}
-                        onClick={() => setCurrentStep(step.id)}
-                      >
-                        {step.name}
-                      </button>
-                    ))}
-                  </div>
+          {/* Rules Card */}
+          <div className="stat bg-base-200 rounded-lg">
+            <div className="stat-figure text-accent">
+              <GitBranch className="w-8 h-8" />
+            </div>
+            <div className="stat-title">Aturan Fuzzy</div>
+            <div className="stat-value text-accent">
+              {stats?.aturan.total || 0}
+            </div>
+            <div className="stat-desc">
+              {stats?.aturan.aktif || 0} aktif dari {stats?.aturan.total || 0}{" "}
+              total
+            </div>
+          </div>
+        </div>
+      </div>
 
-                  <div className="flex gap-2">
-                    <button
-                      className="btn btn-outline btn-sm"
-                      onClick={handleReset}
-                    >
-                      New Calculation
-                    </button>
-                    <button
-                      className="btn btn-ghost btn-sm"
-                      onClick={() => setShowInputForm(true)}
-                    >
-                      Edit Input
-                    </button>
+      {/* Detailed Statistics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Parameter Details */}
+        <div className="bg-base-100 rounded-lg border p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Detail Parameter</h3>
+            <Link href="/fuzzy/parameter">
+              <Button size="sm" variant="outline">
+                Kelola <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </Link>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Parameter Input:</span>
+              <span className="badge badge-primary">
+                {stats?.parameters.input || 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Parameter Output:</span>
+              <span className="badge badge-secondary">
+                {stats?.parameters.output || 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Status Aktif:</span>
+              <span className="badge badge-success">
+                {stats?.parameters.aktif || 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Non-aktif:</span>
+              <span className="badge badge-error">
+                {(stats?.parameters.total || 0) -
+                  (stats?.parameters.aktif || 0)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Function Details */}
+        <div className="bg-base-100 rounded-lg border p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Detail Fungsi</h3>
+            <Link href="/fuzzy/fungsi-keanggotaan">
+              <Button size="sm" variant="outline">
+                Kelola <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </Link>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Triangular:</span>
+              <span className="badge badge-info">
+                {stats?.fungsi.triangular || 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Trapezoidal:</span>
+              <span className="badge badge-warning">
+                {stats?.fungsi.trapezoidal || 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Gaussian:</span>
+              <span className="badge badge-accent">
+                {stats?.fungsi.gaussian || 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Status Aktif:</span>
+              <span className="badge badge-success">
+                {stats?.fungsi.aktif || 0}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Rules Overview */}
+      <div className="bg-base-100 rounded-lg border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Overview Aturan Fuzzy</h3>
+          <Link href="/fuzzy/aturan">
+            <Button size="sm" variant="outline">
+              Kelola <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="text-center">
+            <div className="stat-value text-2xl text-primary">
+              {stats?.aturan.total || 0}
+            </div>
+            <div className="stat-desc">Total Aturan</div>
+          </div>
+          <div className="text-center">
+            <div className="stat-value text-2xl text-success">
+              {stats?.aturan.aktif || 0}
+            </div>
+            <div className="stat-desc">Aturan Aktif</div>
+          </div>
+          <div className="text-center">
+            <div className="stat-value text-2xl text-accent">
+              {stats?.aturan.rataRataBobot
+                ? `${(stats.aturan.rataRataBobot * 100).toFixed(0)}%`
+                : "0%"}
+            </div>
+            <div className="stat-desc">Rata-rata Bobot</div>
+          </div>
+          <div className="text-center">
+            <div className="stat-value text-2xl text-warning">
+              {stats?.aturan.penyakitTercakup || 0}
+            </div>
+            <div className="stat-desc">Penyakit Tercakup</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-base-100 rounded-lg border p-6">
+        <h3 className="text-lg font-semibold mb-4">Aksi Cepat</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {quickActions.map((action, index) => {
+            const Icon = action.icon;
+            return (
+              <Link key={index} href={action.href}>
+                <div className="card bg-base-200 hover:bg-base-300 transition-colors cursor-pointer">
+                  <div className="card-body p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Icon className="w-6 h-6 text-primary" />
+                      <h4 className="font-semibold">{action.title}</h4>
+                    </div>
+                    <p className="text-sm text-base-content/70">
+                      {action.description}
+                    </p>
+                    <div className="card-actions justify-end mt-3">
+                      <Button size="sm" variant="outline">
+                        <Plus className="w-4 h-4 mr-1" />
+                        Buat
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Current Step Content */}
-            <div className="card bg-base-100 shadow-lg">
-              <div className="card-body">
-                {(() => {
-                  const CurrentStepComponent = steps.find(
-                    (step) => step.id === currentStep
-                  )?.component;
-                  return CurrentStepComponent ? <CurrentStepComponent /> : null;
-                })()}
-              </div>
-            </div>
-
-            {/* Step Navigation Buttons */}
-            <div className="flex justify-between mt-6">
-              <button
-                className="btn btn-outline"
-                onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
-                disabled={currentStep === 1}
-              >
-                Previous Step
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => setCurrentStep(Math.min(3, currentStep + 1))}
-                disabled={currentStep === 3}
-              >
-                Next Step
-              </button>
-            </div>
-          </>
-        )}
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

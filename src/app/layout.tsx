@@ -10,7 +10,6 @@ export const metadata: Metadata = {
     "Advanced Fuzzy Logic Inference System for Cattle Disease Diagnosis",
   keywords: "fuzzy logic, mamdani, inference system, cattle diagnosis, AI",
   authors: [{ name: "SmartSpartacuS" }],
-  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({

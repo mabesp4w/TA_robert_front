@@ -284,3 +284,112 @@ export const PARAMETER_RANGES = {
   konsistensi_feses: { min: 0, max: 10, unit: "" },
   produksi_susu: { min: 0, max: 50, unit: "L/hari" },
 } as const;
+
+export interface ParameterFuzzy {
+  id?: string;
+  nama_parameter: string;
+  tipe: "input" | "output";
+  satuan?: string;
+  nilai_min: number;
+  nilai_max: number;
+  deskripsi?: string;
+  aktif: boolean;
+  created_at?: string;
+  range_display?: string;
+}
+
+export interface ParameterFuzzyChoice {
+  id: string;
+  nama_parameter: string;
+  tipe: string;
+}
+
+export interface FungsiKeanggotaan {
+  id?: string;
+  parameter: string; // ID parameter
+  nama_himpunan: string;
+  tipe_fungsi: "trimf" | "trapmf" | "gaussmf";
+  parameter_fungsi: number[];
+  warna: string;
+  aktif: boolean;
+  created_at?: string;
+  parameter_nama?: string;
+  parameter_tipe?: string;
+  parameter_fungsi_display?: string;
+  parameter_detail?: {
+    nama: string;
+    tipe: string;
+    satuan: string;
+    range: string;
+  };
+}
+
+export interface AturanFuzzy {
+  id?: string;
+  nama_aturan: string;
+  penyakit: string; // ID penyakit
+  kondisi_if: Record<string, string>;
+  kesimpulan_then: Record<string, any>;
+  bobot: number;
+  deskripsi?: string;
+  aktif: boolean;
+  created_at?: string;
+  penyakit_nama?: string;
+  kondisi_readable?: string;
+  kondisi_count?: number;
+  penyakit_detail?: {
+    nama: string;
+    tingkat_bahaya: string;
+    deskripsi: string;
+  };
+}
+
+export interface JenisPenyakitChoice {
+  id: string;
+  nm_penyakit: string;
+  tingkat_bahaya: string;
+}
+
+export interface FuzzyStatistik {
+  total_parameter?: number;
+  parameter_aktif?: number;
+  parameter_non_aktif?: number;
+  distribusi_tipe?: Record<string, number>;
+  total_fungsi?: number;
+  fungsi_aktif?: number;
+  fungsi_non_aktif?: number;
+  distribusi_tipe_fungsi?: Record<string, number>;
+  top_parameter?: Array<{
+    parameter: string;
+    jumlah_fungsi: number;
+  }>;
+  total_aturan?: number;
+  aturan_aktif?: number;
+  aturan_non_aktif?: number;
+  distribusi_penyakit?: Array<{
+    penyakit: string;
+    jumlah_aturan: number;
+  }>;
+  statistik_bobot?: {
+    rata_rata: number;
+    minimum: number;
+    maksimum: number;
+  };
+}
+
+export interface ListResponse<T> {
+  success: boolean;
+  message: string;
+  data: T[];
+  pagination?: {
+    count: number;
+    next: string | null;
+    previous: string | null;
+  };
+}
+
+export interface DetailResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}

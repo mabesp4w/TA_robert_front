@@ -120,8 +120,7 @@ export const useAturanStore = create<AturanState & AturanActions>(
 
         const response = await aturanFuzzyCRUD.getAll(params);
         set({
-          aturanList: response.data,
-          pagination: response.pagination || null,
+          aturanList: response.results,
           loading: false,
         });
       } catch (error) {
@@ -136,7 +135,7 @@ export const useAturanStore = create<AturanState & AturanActions>(
       try {
         const response = await aturanFuzzyCRUD.getById(id);
         set({
-          aturan: response.data,
+          aturan: response.results,
           loadingDetail: false,
         });
       } catch (error) {
@@ -205,7 +204,7 @@ export const useAturanStore = create<AturanState & AturanActions>(
       try {
         const response = await aturanFuzzyCRUD.getPenyakitChoices();
         set({
-          penyakitChoices: response.data,
+          penyakitChoices: response.results,
           loadingChoices: false,
         });
       } catch (error) {
@@ -220,7 +219,7 @@ export const useAturanStore = create<AturanState & AturanActions>(
       try {
         const response = await aturanFuzzyCRUD.getStatistik();
         set({
-          statistik: response.data,
+          statistik: response.results,
           loadingStatistik: false,
         });
       } catch (error) {
@@ -235,7 +234,7 @@ export const useAturanStore = create<AturanState & AturanActions>(
       try {
         const response = await aturanFuzzyCRUD.testRule(id, inputData);
         set({
-          testResult: response.data,
+          testResult: response.results,
           loadingTest: false,
         });
         toast.success("Test aturan berhasil dilakukan");

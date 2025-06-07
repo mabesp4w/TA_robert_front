@@ -10,9 +10,8 @@ import {
   ParameterFuzzyChoice,
   JenisPenyakitChoice,
   FuzzyStatistik,
-  ListResponse,
-  DetailResponse,
 } from "@/types/fuzzy";
+import { DetailResponse, ListResponse } from "@/types";
 
 // Parameter Fuzzy CRUD
 export const parameterFuzzyCRUD = {

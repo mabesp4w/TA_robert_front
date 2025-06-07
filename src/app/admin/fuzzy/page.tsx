@@ -65,23 +65,24 @@ export default function FuzzyDashboard() {
 
       setStats({
         parameters: {
-          total: paramStats.data?.total_parameter || 0,
-          aktif: paramStats.data?.parameter_aktif || 0,
-          input: paramStats.data?.distribusi_tipe?.input || 0,
-          output: paramStats.data?.distribusi_tipe?.output || 0,
+          total: paramStats.results?.total_parameter || 0,
+          aktif: paramStats.results?.parameter_aktif || 0,
+          input: paramStats.results?.distribusi_tipe?.input || 0,
+          output: paramStats.results?.distribusi_tipe?.output || 0,
         },
         fungsi: {
-          total: fungsiStats.data?.total_fungsi || 0,
-          aktif: fungsiStats.data?.fungsi_aktif || 0,
-          triangular: fungsiStats.data?.distribusi_tipe_fungsi?.trimf || 0,
-          trapezoidal: fungsiStats.data?.distribusi_tipe_fungsi?.trapmf || 0,
-          gaussian: fungsiStats.data?.distribusi_tipe_fungsi?.gaussmf || 0,
+          total: fungsiStats.results?.total_fungsi || 0,
+          aktif: fungsiStats.results?.fungsi_aktif || 0,
+          triangular: fungsiStats.results?.distribusi_tipe_fungsi?.trimf || 0,
+          trapezoidal: fungsiStats.results?.distribusi_tipe_fungsi?.trapmf || 0,
+          gaussian: fungsiStats.results?.distribusi_tipe_fungsi?.gaussmf || 0,
         },
         aturan: {
-          total: aturanStats.data?.total_aturan || 0,
-          aktif: aturanStats.data?.aturan_aktif || 0,
-          rataRataBobot: aturanStats.data?.statistik_bobot?.rata_rata || 0,
-          penyakitTercakup: aturanStats.data?.distribusi_penyakit?.length || 0,
+          total: aturanStats.results?.total_aturan || 0,
+          aktif: aturanStats.results?.aturan_aktif || 0,
+          rataRataBobot: aturanStats.results?.statistik_bobot?.rata_rata || 0,
+          penyakitTercakup:
+            aturanStats.results?.distribusi_penyakit?.length || 0,
         },
       });
     } catch (error) {

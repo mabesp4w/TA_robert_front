@@ -115,8 +115,7 @@ export const useFungsiStore = create<FungsiState & FungsiActions>(
 
         const response = await fungsiKeanggotaanCRUD.getAll(params);
         set({
-          fungsiList: response.data,
-          pagination: response.pagination || null,
+          fungsiList: response.results,
           loading: false,
         });
       } catch (error) {
@@ -131,7 +130,7 @@ export const useFungsiStore = create<FungsiState & FungsiActions>(
       try {
         const response = await fungsiKeanggotaanCRUD.getById(id);
         set({
-          fungsi: response.data,
+          fungsi: response.results,
           loadingDetail: false,
         });
       } catch (error) {
@@ -202,7 +201,7 @@ export const useFungsiStore = create<FungsiState & FungsiActions>(
       try {
         const response = await parameterFuzzyCRUD.getChoices(tipe);
         set({
-          parameterChoices: response.data,
+          parameterChoices: response.results,
           loadingChoices: false,
         });
       } catch (error) {
@@ -217,7 +216,7 @@ export const useFungsiStore = create<FungsiState & FungsiActions>(
       try {
         const response = await fungsiKeanggotaanCRUD.getStatistik();
         set({
-          statistik: response.data,
+          statistik: response.results,
           loadingStatistik: false,
         });
       } catch (error) {

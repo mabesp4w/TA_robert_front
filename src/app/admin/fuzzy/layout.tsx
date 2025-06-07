@@ -12,6 +12,7 @@ import {
   GitBranch,
   BarChart3,
   ChevronRight,
+  LucideAlignVerticalJustifyCenter,
 } from "lucide-react";
 
 interface FuzzyLayoutProps {
@@ -45,6 +46,12 @@ export default function FuzzyLayout({ children }: FuzzyLayoutProps) {
       href: "/admin/fuzzy/aturan",
       icon: GitBranch,
       description: "Kelola rules inferensi",
+    },
+    {
+      name: "Analisa",
+      href: "/admin/fuzzy/analisa",
+      icon: LucideAlignVerticalJustifyCenter,
+      description: "Analisa hasil fuzzy",
     },
   ];
 

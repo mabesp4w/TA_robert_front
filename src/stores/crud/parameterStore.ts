@@ -109,8 +109,7 @@ export const useParameterStore = create<ParameterState & ParameterActions>(
 
         const response = await parameterFuzzyCRUD.getAll(params);
         set({
-          parameters: response.data,
-          pagination: response.pagination || null,
+          parameters: response.results,
           loading: false,
         });
       } catch (error) {
@@ -125,7 +124,7 @@ export const useParameterStore = create<ParameterState & ParameterActions>(
       try {
         const response = await parameterFuzzyCRUD.getById(id);
         set({
-          parameter: response.data,
+          parameter: response.results,
           loadingDetail: false,
         });
       } catch (error) {
@@ -194,7 +193,7 @@ export const useParameterStore = create<ParameterState & ParameterActions>(
       try {
         const response = await parameterFuzzyCRUD.getChoices(tipe);
         set({
-          choices: response.data,
+          choices: response.results,
           loadingChoices: false,
         });
       } catch (error) {
@@ -209,7 +208,7 @@ export const useParameterStore = create<ParameterState & ParameterActions>(
       try {
         const response = await parameterFuzzyCRUD.getStatistik();
         set({
-          statistik: response.data,
+          statistik: response.results,
           loadingStatistik: false,
         });
       } catch (error) {

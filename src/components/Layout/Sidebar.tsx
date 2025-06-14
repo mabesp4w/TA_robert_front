@@ -204,7 +204,7 @@ const Sidebar: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    router.push("/login");
+    router.push("/");
   };
 
   return (
@@ -221,7 +221,7 @@ const Sidebar: React.FC = () => {
               href="/admin/dashboard"
               className="btn btn-ghost text-xl font-bold hover:scale-105 transition-transform"
             >
-              🐄 CattleHealth
+              🐄 Deteksi Penyakit Sapi
             </Link>
           </div>
         </div>

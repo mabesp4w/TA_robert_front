@@ -23,7 +23,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRoles = [],
   requireAuth = true,
   fallback,
-  redirectTo = "/login",
+  redirectTo = "/",
 }) => {
   const router = useRouter();
   const { user, isAuthenticated, loading, checkAuth, hasPermission, hasRole } =

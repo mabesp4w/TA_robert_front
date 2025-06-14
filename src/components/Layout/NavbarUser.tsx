@@ -36,10 +36,9 @@ const navigationItems: NavItem[] = [
     icon: Users,
   },
   {
-    label: "Monitoring",
-    href: "/monitoring",
+    label: "Deteksi Penyakit",
+    href: "/deteksi-penyakit",
     icon: Activity,
-    badge: "New",
   },
 ];
 

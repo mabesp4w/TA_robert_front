@@ -128,6 +128,11 @@ export interface PemeriksaanSapi {
   lemas: boolean;
   demam: boolean;
 
+  // Kondisi fisik (integer values - required)
+  kondisi_mata: number;
+  kondisi_hidung: number;
+  konsistensi_feses: number;
+
   catatan_pemeriksaan?: string;
   created_at?: string;
   updated_at?: string;

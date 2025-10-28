@@ -6,7 +6,7 @@ import FormSelect from "@/components/Forms/FormSelect";
 import { usePemeriksaanSapiStore } from "@/stores/crud/pemeriksaanSapiStore";
 import { useDataSapiStore } from "@/stores/crud/dataSapiStore";
 import { PemeriksaanSapi } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 interface PemeriksaanSapiFormProps {
   initialData?: Partial<PemeriksaanSapi>;
@@ -21,7 +21,7 @@ const PemeriksaanSapiForm = ({
 }: PemeriksaanSapiFormProps) => {
   const { createPemeriksaanSapi, updatePemeriksaanSapi, loading } =
     usePemeriksaanSapiStore();
-  const { dataSapi, fetchDataSapis } = useDataSapiStore();
+  const { dataSapi, fetchDataSapis, loading: loadingSapi } = useDataSapiStore();
   const [parameterStatus, setParameterStatus] = useState<any>({});
 
   const {
@@ -60,6 +60,9 @@ const PemeriksaanSapiForm = ({
       setValue("muntah", initialData?.muntah || false);
       setValue("lemas", initialData?.lemas || false);
       setValue("demam", initialData?.demam || false);
+      setValue("kondisi_mata", initialData?.kondisi_mata || 0);
+      setValue("kondisi_hidung", initialData?.kondisi_hidung || 0);
+      setValue("konsistensi_feses", initialData?.konsistensi_feses || 0);
       setValue("catatan_pemeriksaan", initialData?.catatan_pemeriksaan || "");
     }
   }, [initialData, setValue]);
@@ -137,10 +140,19 @@ const PemeriksaanSapiForm = ({
     }
   };
 
-  const sapiOptions = dataSapi.map((sapi) => ({
-    value: sapi.id,
-    label: `${sapi.nm_sapi} (${sapi.jenkel}, ${sapi.umur_bulan} bulan)`,
-  }));
+  // Gunakan useMemo agar reactive terhadap perubahan dataSapi
+  const sapiOptions = useMemo(() => {
+    return dataSapi
+      .filter((sapi) => sapi && sapi.id) // Hanya filter sapi yang memiliki ID
+      .map((sapi) => ({
+        value: sapi.id,
+        label: `${sapi.nm_sapi || `Sapi ${sapi.id.slice(0, 8)}`}${
+          sapi.jenkel ? ` (${sapi.jenkel}` : ""
+        }${sapi.umur_bulan ? `, ${sapi.umur_bulan} bulan` : ""}${
+          sapi.berat_kg ? `, ${sapi.berat_kg} kg` : ""
+        }${sapi.jenkel ? ")" : ""}`,
+      }));
+  }, [dataSapi]);
 
   const getStatusBadge = (paramKey: string) => {
     const param = parameterStatus[paramKey];
@@ -182,15 +194,33 @@ const PemeriksaanSapiForm = ({
           <h3 className="card-title">Informasi Dasar</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormSelect
-              label="Pilih Sapi"
-              required
-              options={[{ value: "", label: "Pilih sapi..." }, ...sapiOptions]}
-              {...register("sapi", {
-                required: "Sapi harus dipilih",
-              })}
-              error={errors.sapi?.message}
-            />
+            <div>
+              <FormSelect
+                label="Pilih Sapi"
+                required
+                options={[
+                  {
+                    value: "",
+                    label: loadingSapi
+                      ? "Memuat data sapi..."
+                      : sapiOptions.length === 0
+                      ? "Tidak ada data sapi"
+                      : "Pilih sapi...",
+                  },
+                  ...sapiOptions,
+                ]}
+                {...register("sapi", {
+                  required: "Sapi harus dipilih",
+                })}
+                error={errors.sapi?.message}
+                disabled={loadingSapi || sapiOptions.length === 0}
+              />
+              {!loadingSapi && sapiOptions.length === 0 && (
+                <p className="text-xs text-warning mt-1">
+                  Belum ada data sapi. Silakan tambah data sapi terlebih dahulu.
+                </p>
+              )}
+            </div>
 
             <FormInput
               label="Tanggal Pemeriksaan"
@@ -394,6 +424,79 @@ const PemeriksaanSapiForm = ({
                 </label>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Physical Condition */}
+      <div className="card bg-base-100 shadow">
+        <div className="card-body">
+          <h3 className="card-title">Kondisi Fisik</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormSelect
+              label="Kondisi Mata"
+              required
+              options={[
+                { value: 0, label: "Pilih kondisi..." },
+                { value: 1, label: "Normal (Bersih & Cerah)" },
+                { value: 2, label: "Berair" },
+                { value: 3, label: "Merah/Iritasi" },
+                { value: 4, label: "Bengkak" },
+                { value: 5, label: "Ada Kotoran/Nanah" },
+                { value: 6, label: "Keruh/Tidak Jernih" },
+              ]}
+              {...register("kondisi_mata", {
+                valueAsNumber: true,
+                required: "Kondisi mata harus dipilih",
+                validate: (value) => value > 0 || "Kondisi mata harus dipilih",
+              })}
+              error={errors.kondisi_mata?.message}
+            />
+
+            <FormSelect
+              label="Kondisi Hidung"
+              required
+              options={[
+                { value: 0, label: "Pilih kondisi..." },
+                { value: 1, label: "Normal (Bersih & Lembab)" },
+                { value: 2, label: "Kering" },
+                { value: 3, label: "Berlendir Bening" },
+                { value: 4, label: "Berlendir Kental" },
+                { value: 5, label: "Bernanah" },
+                { value: 6, label: "Berdarah" },
+                { value: 7, label: "Ada Kerak" },
+              ]}
+              {...register("kondisi_hidung", {
+                valueAsNumber: true,
+                required: "Kondisi hidung harus dipilih",
+                validate: (value) =>
+                  value > 0 || "Kondisi hidung harus dipilih",
+              })}
+              error={errors.kondisi_hidung?.message}
+            />
+
+            <FormSelect
+              label="Konsistensi Feses"
+              required
+              options={[
+                { value: 0, label: "Pilih konsistensi..." },
+                { value: 1, label: "Normal (Padat & Berbentuk)" },
+                { value: 2, label: "Lunak" },
+                { value: 3, label: "Encer/Diare" },
+                { value: 4, label: "Berlendir" },
+                { value: 5, label: "Berdarah" },
+                { value: 6, label: "Keras/Kering" },
+                { value: 7, label: "Berbusa" },
+              ]}
+              {...register("konsistensi_feses", {
+                valueAsNumber: true,
+                required: "Konsistensi feses harus dipilih",
+                validate: (value) =>
+                  value > 0 || "Konsistensi feses harus dipilih",
+              })}
+              error={errors.konsistensi_feses?.message}
+            />
           </div>
         </div>
       </div>

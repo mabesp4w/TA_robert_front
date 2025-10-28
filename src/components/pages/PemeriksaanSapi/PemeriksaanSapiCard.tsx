@@ -26,20 +26,90 @@ const PemeriksaanSapiCard = ({
   onEdit,
   onDelete,
 }: PemeriksaanSapiCardProps) => {
+  // Helper function untuk kondisi fisik (number values)
+  const getKondisiFisikLabel = (value: number, type: string): string => {
+    if (value === undefined || value === null || typeof value !== "number")
+      return "-";
+
+    const mataMappings: { [key: number]: string } = {
+      0: "-",
+      1: "Normal",
+      2: "Berair",
+      3: "Merah/Iritasi",
+      4: "Bengkak",
+      5: "Ada Kotoran",
+      6: "Keruh",
+    };
+
+    const hidungMappings: { [key: number]: string } = {
+      0: "-",
+      1: "Normal",
+      2: "Kering",
+      3: "Berlendir Bening",
+      4: "Berlendir Kental",
+      5: "Bernanah",
+      6: "Berdarah",
+      7: "Ada Kerak",
+    };
+
+    const fesesMappings: { [key: number]: string } = {
+      0: "-",
+      1: "Normal",
+      2: "Lunak",
+      3: "Encer",
+      4: "Berlendir",
+      5: "Berdarah",
+      6: "Keras",
+      7: "Berbusa",
+    };
+
+    if (type === "mata") return mataMappings[value] || "-";
+    if (type === "hidung") return hidungMappings[value] || "-";
+    if (type === "feses") return fesesMappings[value] || "-";
+    return "-";
+  };
+
+  const getKondisiFisikColor = (kondisi: number, type: string): string => {
+    if (kondisi === 1) return "badge-success"; // Normal
+
+    // Kondisi Mata: 2,3=warning | 4,5,6=error
+    if (type === "mata") {
+      if ([2, 3].includes(kondisi)) return "badge-warning";
+      if ([4, 5, 6].includes(kondisi)) return "badge-error";
+    }
+
+    // Kondisi Hidung: 2,3=warning | 4,5,6,7=error
+    if (type === "hidung") {
+      if ([2, 3].includes(kondisi)) return "badge-warning";
+      if ([4, 5, 6, 7].includes(kondisi)) return "badge-error";
+    }
+
+    // Konsistensi Feses: 2=warning | 3,4,5,6,7=error
+    if (type === "feses") {
+      if ([2].includes(kondisi)) return "badge-warning";
+      if ([3, 4, 5, 6, 7].includes(kondisi)) return "badge-error";
+    }
+
+    return "badge-ghost";
+  };
+
   // Health assessment functions
   const getSuhuStatus = (suhu: number) => {
+    if (isNaN(suhu)) return { status: "unknown", color: "badge-ghost" };
     if (suhu >= 38.0 && suhu <= 39.5)
       return { status: "normal", color: "badge-success" };
     return { status: "abnormal", color: "badge-error" };
   };
 
   const getNafsuMakanStatus = (nilai: number) => {
+    if (isNaN(nilai)) return { status: "unknown", color: "badge-ghost" };
     if (nilai >= 8) return { status: "tinggi", color: "badge-success" };
     if (nilai >= 5) return { status: "sedang", color: "badge-warning" };
     return { status: "rendah", color: "badge-error" };
   };
 
   const getAktivitasStatus = (nilai: number) => {
+    if (isNaN(nilai)) return { status: "unknown", color: "badge-ghost" };
     if (nilai >= 8) return { status: "tinggi", color: "badge-success" };
     if (nilai >= 5) return { status: "sedang", color: "badge-warning" };
     return { status: "rendah", color: "badge-error" };
@@ -62,10 +132,14 @@ const PemeriksaanSapiCard = ({
   // Overall health score calculation
   const parameterNormal = [
     suhuStatus.status === "normal",
-    pemeriksaan.frekuensi_napas >= 12 && pemeriksaan.frekuensi_napas <= 36,
-    pemeriksaan.denyut_jantung >= 60 && pemeriksaan.denyut_jantung <= 84,
-    pemeriksaan.nafsu_makan >= 7,
-    pemeriksaan.aktivitas >= 7,
+    !isNaN(pemeriksaan.frekuensi_napas) &&
+      pemeriksaan.frekuensi_napas >= 12 &&
+      pemeriksaan.frekuensi_napas <= 36,
+    !isNaN(pemeriksaan.denyut_jantung) &&
+      pemeriksaan.denyut_jantung >= 60 &&
+      pemeriksaan.denyut_jantung <= 84,
+    !isNaN(pemeriksaan.nafsu_makan) && pemeriksaan.nafsu_makan >= 7,
+    !isNaN(pemeriksaan.aktivitas) && pemeriksaan.aktivitas >= 7,
   ].filter(Boolean).length;
 
   const healthScore = Math.round((parameterNormal / 5) * 100);
@@ -126,7 +200,9 @@ const PemeriksaanSapiCard = ({
               <span className="text-sm">Suhu Tubuh</span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="font-semibold">{pemeriksaan.suhu_tubuh}°C</span>
+              <span className="font-semibold">
+                {isNaN(pemeriksaan.suhu_tubuh) ? "0" : pemeriksaan.suhu_tubuh}°C
+              </span>
               <span className={`badge badge-xs ${suhuStatus.color}`}>
                 {suhuStatus.status}
               </span>
@@ -141,7 +217,10 @@ const PemeriksaanSapiCard = ({
                 <span>Jantung</span>
               </div>
               <span className="font-semibold">
-                {pemeriksaan.denyut_jantung} BPM
+                {isNaN(pemeriksaan.denyut_jantung)
+                  ? "0"
+                  : pemeriksaan.denyut_jantung}{" "}
+                BPM
               </span>
             </div>
             <div className="flex items-center justify-between p-2 bg-base-200 rounded text-xs">
@@ -150,7 +229,10 @@ const PemeriksaanSapiCard = ({
                 <span>Napas</span>
               </div>
               <span className="font-semibold">
-                {pemeriksaan.frekuensi_napas}/min
+                {isNaN(pemeriksaan.frekuensi_napas)
+                  ? "0"
+                  : pemeriksaan.frekuensi_napas}
+                /min
               </span>
             </div>
           </div>
@@ -160,7 +242,8 @@ const PemeriksaanSapiCard = ({
             <div className="stat bg-base-200 rounded p-2">
               <div className="stat-title text-xs">Nafsu Makan</div>
               <div className="stat-value text-sm">
-                {pemeriksaan.nafsu_makan}/10
+                {isNaN(pemeriksaan.nafsu_makan) ? "0" : pemeriksaan.nafsu_makan}
+                /10
               </div>
               <div
                 className={`stat-desc ${nafsuMakanStatus.color.replace(
@@ -174,7 +257,7 @@ const PemeriksaanSapiCard = ({
             <div className="stat bg-base-200 rounded p-2">
               <div className="stat-title text-xs">Aktivitas</div>
               <div className="stat-value text-sm">
-                {pemeriksaan.aktivitas}/10
+                {isNaN(pemeriksaan.aktivitas) ? "0" : pemeriksaan.aktivitas}/10
               </div>
               <div
                 className={`stat-desc ${aktivitasStatus.color.replace(
@@ -224,6 +307,68 @@ const PemeriksaanSapiCard = ({
                 {pemeriksaan.demam && (
                   <span className="badge badge-accent badge-xs">Demam</span>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Physical Condition */}
+          {(pemeriksaan.kondisi_mata ||
+            pemeriksaan.kondisi_hidung ||
+            pemeriksaan.konsistensi_feses) && (
+            <div className="space-y-2">
+              <span className="text-sm font-medium">Kondisi Fisik:</span>
+              <div className="grid grid-cols-1 gap-2">
+                {pemeriksaan.kondisi_mata &&
+                  typeof pemeriksaan.kondisi_mata === "number" &&
+                  pemeriksaan.kondisi_mata > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs opacity-70">👁️ Mata:</span>
+                      <span
+                        className={`badge badge-xs ${getKondisiFisikColor(
+                          pemeriksaan.kondisi_mata,
+                          "mata"
+                        )}`}
+                      >
+                        {getKondisiFisikLabel(pemeriksaan.kondisi_mata, "mata")}
+                      </span>
+                    </div>
+                  )}
+                {pemeriksaan.kondisi_hidung &&
+                  typeof pemeriksaan.kondisi_hidung === "number" &&
+                  pemeriksaan.kondisi_hidung > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs opacity-70">👃 Hidung:</span>
+                      <span
+                        className={`badge badge-xs ${getKondisiFisikColor(
+                          pemeriksaan.kondisi_hidung,
+                          "hidung"
+                        )}`}
+                      >
+                        {getKondisiFisikLabel(
+                          pemeriksaan.kondisi_hidung,
+                          "hidung"
+                        )}
+                      </span>
+                    </div>
+                  )}
+                {pemeriksaan.konsistensi_feses &&
+                  typeof pemeriksaan.konsistensi_feses === "number" &&
+                  pemeriksaan.konsistensi_feses > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs opacity-70">💩 Feses:</span>
+                      <span
+                        className={`badge badge-xs ${getKondisiFisikColor(
+                          pemeriksaan.konsistensi_feses,
+                          "feses"
+                        )}`}
+                      >
+                        {getKondisiFisikLabel(
+                          pemeriksaan.konsistensi_feses,
+                          "feses"
+                        )}
+                      </span>
+                    </div>
+                  )}
               </div>
             </div>
           )}

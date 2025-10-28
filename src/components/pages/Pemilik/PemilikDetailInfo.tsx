@@ -473,7 +473,10 @@ const PemilikDetailInfo = ({ pemilik }: PemilikDetailInfoProps) => {
                   <tbody>
                     {daftarSapi.map((sapi: any, index: number) => (
                       <tr key={index}>
-                        <td className="font-semibold">{sapi.nm_sapi}</td>
+                        <td className="font-semibold">
+                          {sapi.nm_sapi ||
+                            `Sapi ${sapi.id?.slice(0, 8) || "-"}`}
+                        </td>
                         <td>
                           <span
                             className={`badge ${
@@ -485,8 +488,8 @@ const PemilikDetailInfo = ({ pemilik }: PemilikDetailInfoProps) => {
                             {sapi.jenkel === "jantan" ? "Jantan" : "Betina"}
                           </span>
                         </td>
-                        <td>{sapi.umur_bulan} bulan</td>
-                        <td>{sapi.berat_kg} kg</td>
+                        <td>{sapi.umur_bulan || 0} bulan</td>
+                        <td>{sapi.berat_kg || 0} kg</td>
                         <td>
                           <span
                             className={`badge ${

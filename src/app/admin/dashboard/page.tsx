@@ -235,7 +235,7 @@ export default function FuzzyDashboard() {
         <div className="bg-base-100 rounded-lg border p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Detail Parameter</h3>
-            <Link href="/fuzzy/parameter">
+            <Link href="/admin/fuzzy/parameter">
               <Button size="sm" variant="outline">
                 Kelola <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
@@ -275,7 +275,7 @@ export default function FuzzyDashboard() {
         <div className="bg-base-100 rounded-lg border p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Detail Fungsi</h3>
-            <Link href="/fuzzy/fungsi-keanggotaan">
+            <Link href="/admin/fuzzy/fungsi-keanggotaan">
               <Button size="sm" variant="outline">
                 Kelola <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
@@ -315,7 +315,7 @@ export default function FuzzyDashboard() {
       <div className="bg-base-100 rounded-lg border p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Overview Aturan Fuzzy</h3>
-          <Link href="/fuzzy/aturan">
+          <Link href="/admin/fuzzy/aturan">
             <Button size="sm" variant="outline">
               Kelola <ArrowRight className="w-4 h-4 ml-1" />
             </Button>

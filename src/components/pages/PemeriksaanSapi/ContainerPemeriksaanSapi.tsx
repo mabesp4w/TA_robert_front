@@ -124,13 +124,16 @@ export default function ContainerPemeriksaanSapi() {
     { batuk: 0, sesak_napas: 0, diare: 0, muntah: 0, lemas: 0, demam: 0 }
   );
 
+  // Calculate average temperature, filtering out invalid values
+  const validSuhu = pemeriksaanSapis.filter(
+    (p) => typeof p.suhu_tubuh === "number" && !isNaN(p.suhu_tubuh)
+  );
   const avgSuhu =
-    pemeriksaanSapis.length > 0
+    validSuhu.length > 0
       ? (
-          pemeriksaanSapis.reduce((sum, p) => sum + p.suhu_tubuh, 0) /
-          pemeriksaanSapis.length
+          validSuhu.reduce((sum, p) => sum + p.suhu_tubuh, 0) / validSuhu.length
         ).toFixed(1)
-      : 0;
+      : "0";
 
   return (
     <div className="space-y-6">
@@ -323,7 +326,10 @@ export default function ContainerPemeriksaanSapi() {
               <div className="stat">
                 <div className="stat-title">Rata-rata Suhu</div>
                 <div className="stat-value text-secondary">
-                  {laporanHarian.statistik_suhu.rata_rata}°C
+                  {isNaN(laporanHarian.statistik_suhu.rata_rata)
+                    ? "0"
+                    : laporanHarian.statistik_suhu.rata_rata}
+                  °C
                 </div>
               </div>
               <div className="stat">
@@ -343,7 +349,9 @@ export default function ContainerPemeriksaanSapi() {
                     ([gejala, jumlah]) => (
                       <div key={gejala} className="stat bg-base-200 rounded">
                         <div className="stat-title capitalize">
-                          {gejala.replace("_", " ")}
+                          {typeof gejala === "string"
+                            ? gejala.replace("_", " ")
+                            : gejala}
                         </div>
                         <div className="stat-value text-sm">
                           {jumlah as number}
@@ -388,7 +396,7 @@ export default function ContainerPemeriksaanSapi() {
                                       : "badge-success"
                                   }`}
                                 >
-                                  {p.suhu_tubuh}°C
+                                  {isNaN(p.suhu_tubuh) ? "0" : p.suhu_tubuh}°C
                                 </span>
                               </td>
                               <td>{p.nafsu_makan}/10</td>
@@ -450,7 +458,9 @@ export default function ContainerPemeriksaanSapi() {
               <div className="stat">
                 <div className="stat-title">Rata-rata Harian</div>
                 <div className="stat-value text-secondary">
-                  {trendMingguan.rata_rata_harian}
+                  {isNaN(trendMingguan.rata_rata_harian)
+                    ? "0"
+                    : trendMingguan.rata_rata_harian}
                 </div>
               </div>
               <div className="stat">
@@ -486,7 +496,12 @@ export default function ContainerPemeriksaanSapi() {
                                 {trend.total_pemeriksaan}
                               </span>
                             </td>
-                            <td>{trend.rata_rata_suhu}°C</td>
+                            <td>
+                              {isNaN(trend.rata_rata_suhu)
+                                ? "0"
+                                : trend.rata_rata_suhu}
+                              °C
+                            </td>
                             <td>
                               <span className="badge badge-error">
                                 {trend.jumlah_gejala_demam}

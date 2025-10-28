@@ -1,7 +1,7 @@
 /** @format */
 // components/pages/PemeriksaanSapi/PemeriksaanSapiFilters.tsx
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import FormInput from "@/components/Forms/FormInput";
 import FormSelect from "@/components/Forms/FormSelect";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -30,13 +30,20 @@ const PemeriksaanSapiFilters = ({
     fetchDataSapis();
   }, [fetchDataSapis]);
 
-  const sapiOptions = [
-    { value: "", label: "Semua Sapi" },
-    ...dataSapi.map((sapi) => ({
-      value: sapi.id,
-      label: `${sapi.nm_sapi} (${sapi.jenkel})`,
-    })),
-  ];
+  // Gunakan useMemo agar reactive terhadap perubahan dataSapi
+  const sapiOptions = useMemo(() => {
+    return [
+      { value: "", label: "Semua Sapi" },
+      ...dataSapi
+        .filter((sapi) => sapi && sapi.id) // Hanya filter sapi yang memiliki ID
+        .map((sapi) => ({
+          value: sapi.id,
+          label: `${sapi.nm_sapi || `Sapi ${sapi.id.slice(0, 8)}`}${
+            sapi.jenkel ? ` (${sapi.jenkel})` : ""
+          }`,
+        })),
+    ];
+  }, [dataSapi]);
 
   const orderingOptions = [
     { value: "-tgl_pemeriksaan", label: "Terbaru Dulu" },

@@ -185,22 +185,6 @@ const DataSapiDetailInfo = ({ sapi }: DataSapiDetailInfoProps) => {
           )}
         </div>
 
-        {/* Timestamps */}
-        {(sapi.created_at || sapi.updated_at) && (
-          <div className="divider"></div>
-        )}
-
-        {sapi.created_at && (
-          <div className="text-xs text-base-content/60">
-            Dibuat: {moment(sapi.created_at).format("DD/MM/YYYY HH:mm")}
-          </div>
-        )}
-
-        {sapi.updated_at && (
-          <div className="text-xs text-base-content/60">
-            Diperbarui: {moment(sapi.updated_at).format("DD/MM/YYYY HH:mm")}
-          </div>
-        )}
       </div>
     </div>
   );

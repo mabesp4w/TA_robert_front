@@ -97,7 +97,7 @@ const PemilikCard = ({
         {/* Kode Pemilik */}
         <div className="flex items-center space-x-2 text-sm">
           <UserIcon className="h-4 w-4 opacity-70" />
-          <span className="font-mono">{pemilik.kd_pemilik}</span>
+          <span className="font-mono">{pemilik.id?.slice(0, 8)}...</span>
         </div>
 
         <div className="space-y-2 text-sm">

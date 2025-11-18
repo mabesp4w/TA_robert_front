@@ -29,8 +29,7 @@ const DataSapiForm = ({
     formState: { errors },
     reset,
     setValue,
-    watch,
-  } = useForm<DataSapi>();
+  } = useForm<any>();
 
   // Generate no_sapi dan tgl_registrasi otomatis berdasarkan tanggal
   useEffect(() => {
@@ -77,7 +76,7 @@ const DataSapiForm = ({
       // Handle pemilik - bisa berupa string ID atau object dengan id
       const pemilikId = typeof initialData.pemilik === 'string' 
         ? initialData.pemilik 
-        : initialData.pemilik?.id || initialData.pemilik_detail?.id || "";
+        : (initialData.pemilik as any)?.id || initialData.pemilik_detail?.id || "";
       
       // Set no_sapi untuk edit
       if (initialData?.no_sapi) {
@@ -161,15 +160,15 @@ const DataSapiForm = ({
           className="input input-bordered w-full bg-base-200"
           value={generatedNoSapi || ""}
           readOnly
-          {...register("no_sapi", {
+          {...(register("no_sapi" as any, {
             required: "Nomor sapi harus diisi",
             value: generatedNoSapi,
-          })}
+          }) as any)}
         />
         {errors.no_sapi && (
           <label className="label">
             <span className="label-text-alt text-error">
-              {errors.no_sapi.message}
+              {(errors.no_sapi as any)?.message}
             </span>
           </label>
         )}
@@ -191,14 +190,14 @@ const DataSapiForm = ({
         {...register("pemilik", {
           required: "Pemilik harus dipilih",
         })}
-        error={errors.pemilik?.message}
+        error={(errors.pemilik as any)?.message}
       />
 
       <FormInput
         label="Nama Sapi"
         placeholder="Masukkan nama sapi (opsional)"
         {...register("nm_sapi")}
-        error={errors.nm_sapi?.message}
+        error={(errors.nm_sapi as any)?.message}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -209,7 +208,7 @@ const DataSapiForm = ({
           {...register("jenkel", {
             required: "Jenis kelamin harus dipilih",
           })}
-          error={errors.jenkel?.message}
+          error={(errors.jenkel as any)?.message}
         />
 
         <FormSelect
@@ -219,7 +218,7 @@ const DataSapiForm = ({
           {...register("status_kesehatan", {
             required: "Status kesehatan harus dipilih",
           })}
-          error={errors.status_kesehatan?.message}
+          error={(errors.status_kesehatan as any)?.message}
         />
       </div>
 
@@ -236,7 +235,7 @@ const DataSapiForm = ({
               message: "Umur tidak boleh negatif",
             },
           })}
-          error={errors.umur_bulan?.message}
+          error={(errors.umur_bulan as any)?.message}
         />
 
         <FormInput
@@ -252,7 +251,7 @@ const DataSapiForm = ({
               message: "Berat tidak boleh negatif",
             },
           })}
-          error={errors.berat_kg?.message}
+          error={(errors.berat_kg as any)?.message}
         />
       </div>
 
@@ -275,7 +274,7 @@ const DataSapiForm = ({
         {errors.tgl_registrasi && (
           <label className="label">
             <span className="label-text-alt text-error">
-              {errors.tgl_registrasi.message}
+              {(errors.tgl_registrasi as any)?.message}
             </span>
           </label>
         )}

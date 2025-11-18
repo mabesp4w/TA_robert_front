@@ -34,7 +34,6 @@ const PemilikForm = ({
 
   useEffect(() => {
     if (initialData) {
-      setValue("kd_pemilik", initialData?.kd_pemilik || "");
       setValue("nm_pemilik", initialData?.nm_pemilik || "");
       setValue("email", initialData?.email || "");
       setValue("no_hp", initialData?.no_hp || "");
@@ -72,30 +71,15 @@ const PemilikForm = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {/* Kode dan Nama Pemilik */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormInput
-          label="Kode Pemilik"
-          placeholder="Masukkan kode pemilik"
-          {...register("kd_pemilik", {
-            required: "Kode pemilik harus diisi",
-            pattern: {
-              value: /^[A-Z0-9]+$/,
-              message: "Kode harus huruf kapital dan angka tanpa spasi",
-            },
-          })}
-          error={errors.kd_pemilik?.message}
-        />
-
-        <FormInput
+      {/* Nama Pemilik */}
+      <FormInput
           label="Nama Pemilik"
           placeholder="Masukkan nama pemilik"
           {...register("nm_pemilik", {
             required: "Nama pemilik harus diisi",
           })}
           error={errors.nm_pemilik?.message}
-        />
-      </div>
+      />
 
       {/* Email dan No HP */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

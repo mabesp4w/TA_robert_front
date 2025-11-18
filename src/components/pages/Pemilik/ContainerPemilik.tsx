@@ -11,7 +11,6 @@ import {
   PlusIcon,
   FunnelIcon,
   ChartBarIcon,
-  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { Pemilik } from "@/types";
 import { useRouter } from "next/navigation";
@@ -28,7 +27,6 @@ export default function ContainerPemilik() {
     aktifkanPemilik,
     fetchPemiliks,
     fetchStatistikUmum,
-    fetchPemilikPerluPerhatian,
     statistikUmum,
     pemilikPerluPerhatian,
   } = usePemilikStore();
@@ -92,11 +90,6 @@ export default function ContainerPemilik() {
     setShowStatistik(true);
   };
 
-  const handleShowPerluPerhatian = () => {
-    fetchPemilikPerluPerhatian();
-    setShowPerluPerhatian(true);
-  };
-
   // const getPriorityColor = (priority: string) => {
   //   switch (priority) {
   //     case "tinggi":
@@ -134,13 +127,6 @@ export default function ContainerPemilik() {
           </p>
         </div>
         <div className="flex space-x-2">
-          <button
-            onClick={handleShowPerluPerhatian}
-            className="btn btn-outline btn-warning btn-sm"
-          >
-            <ExclamationTriangleIcon className="h-4 w-4" />
-            Perlu Perhatian
-          </button>
           <button
             onClick={handleShowStatistik}
             className="btn btn-outline btn-sm"

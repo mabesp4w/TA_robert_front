@@ -32,20 +32,20 @@ export default function FuzzyCalculationPage({
   const pemeriksaanId = params.id;
 
   useEffect(() => {
-    setPemeriksaanId(pemeriksaanId);
-    handleCalculate();
-  }, [pemeriksaanId]);
+    const handleCalculate = async () => {
+      try {
+        setPemeriksaanId(pemeriksaanId);
+        await calculateCompleteFlow();
+        setShowInputForm(false);
+        toast.success("Fuzzy calculation completed successfully!");
+      } catch (error) {
+        console.log({ error });
+        toast.error("Calculation failed. Please check your inputs.");
+      }
+    };
 
-  const handleCalculate = async () => {
-    try {
-      await calculateCompleteFlow();
-      setShowInputForm(false);
-      toast.success("Fuzzy calculation completed successfully!");
-    } catch (error) {
-      console.log({ error });
-      toast.error("Calculation failed. Please check your inputs.");
-    }
-  };
+    handleCalculate();
+  }, [pemeriksaanId, setPemeriksaanId, calculateCompleteFlow]);
 
   const handleReset = () => {
     resetCalculation();

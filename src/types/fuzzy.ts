@@ -50,6 +50,12 @@ export interface RuleCondition {
 
 export interface DiseaseScore {
   disease_id: string;
+  nm_penyakit?: string;
+  deskripsi?: string;
+  tingkat_bahaya?: string;
+  gejala_umum?: string;
+  pengobatan?: string;
+  pencegahan?: string;
   total_score: number;
   rules_count: number;
   max_activation: number;

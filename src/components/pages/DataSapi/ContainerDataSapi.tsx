@@ -48,6 +48,7 @@ export default function ContainerDataSapi() {
   };
 
   const handleEdit = (sapi: DataSapi) => {
+    // Gunakan data yang sudah ada di list, tidak perlu fetch ulang
     setEditingDataSapi(sapi);
     setShowForm(true);
   };

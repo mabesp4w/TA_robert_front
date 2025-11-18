@@ -60,35 +60,60 @@ const DataSapiCard = ({
     <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
       <div className="card-body">
         <div className="flex justify-between items-start">
-          <h2 className="card-title">
-            {sapi.nm_sapi || `Sapi ${sapi.id.slice(0, 8)}`}
-            <span className="text-lg ml-1">{getJenkelIcon(sapi.jenkel)}</span>
-          </h2>
+          <div>
+            <h2 className="card-title">
+              {sapi.nm_sapi || `Sapi ${sapi.id.slice(0, 8)}`}
+              <span className="text-lg ml-1">{getJenkelIcon(sapi.jenkel)}</span>
+            </h2>
+            {sapi.no_sapi && (
+              <p className="text-xs text-base-content/60 font-mono mt-1">
+                No: {sapi.no_sapi}
+              </p>
+            )}
+          </div>
           <div className={`badge ${getStatusColor(sapi.status_kesehatan)}`}>
             {getStatusText(sapi.status_kesehatan)}
           </div>
         </div>
 
         <div className="space-y-2 text-sm">
+          {sapi.pemilik_detail && (
+            <div className="flex justify-between">
+              <span className="opacity-70">Pemilik:</span>
+              <span className="text-right max-w-[60%] truncate" title={sapi.pemilik_detail.nm_pemilik}>
+                {sapi.pemilik_detail.nm_pemilik}
+              </span>
+            </div>
+          )}
+
           <div className="flex justify-between">
             <span className="opacity-70">Jenis Kelamin:</span>
             <span className="capitalize">{getJenkelText(sapi.jenkel)}</span>
           </div>
 
-          <div className="flex justify-between">
-            <span className="opacity-70">Umur:</span>
-            <span>{sapi.umur_bulan} bulan</span>
-          </div>
+          {sapi.umur_display ? (
+            <div className="flex justify-between">
+              <span className="opacity-70">Umur:</span>
+              <span>{sapi.umur_display}</span>
+            </div>
+          ) : (
+            <div className="flex justify-between">
+              <span className="opacity-70">Umur:</span>
+              <span>{sapi.umur_bulan} bulan</span>
+            </div>
+          )}
 
           <div className="flex justify-between">
             <span className="opacity-70">Berat:</span>
             <span>{sapi.berat_kg} kg</span>
           </div>
 
-          <div className="flex justify-between">
-            <span className="opacity-70">Registrasi:</span>
-            <span>{moment(sapi.tgl_registrasi).format("DD/MM/YYYY")}</span>
-          </div>
+          {sapi.tgl_registrasi && (
+            <div className="flex justify-between">
+              <span className="opacity-70">Registrasi:</span>
+              <span>{moment(sapi.tgl_registrasi).format("DD/MM/YYYY")}</span>
+            </div>
+          )}
         </div>
 
         <div className="card-actions justify-end mt-4">

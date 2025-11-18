@@ -45,7 +45,7 @@ export const useDataSapiStore = create<DataSapiState>((set) => ({
       });
     } catch (error: any) {
       const errorMessage =
-        error.response?.data?.message || "Failed to fetch jenis penyakit";
+        error.response?.data?.message || "Gagal mengambil data sapi";
       set({ error: errorMessage, loading: false });
       toast.error(errorMessage);
     }
@@ -55,13 +55,18 @@ export const useDataSapiStore = create<DataSapiState>((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await dataSapiCRUD.getById(id);
+      // Handle response structure - bisa berupa object langsung atau dalam results
+      const data = response.results || response;
       set({
-        currentDataSapi: response.results,
+        currentDataSapi: data as DataSapi,
         loading: false,
       });
     } catch (error: any) {
+      console.error("Error fetching data sapi:", error);
       const errorMessage =
-        error.response?.data?.message || "Failed to fetch jenis jenis penyakit";
+        error.response?.data?.message || 
+        error.message || 
+        "Gagal mengambil data sapi";
       set({ error: errorMessage, loading: false });
       toast.error(errorMessage);
     }
@@ -78,11 +83,11 @@ export const useDataSapiStore = create<DataSapiState>((set) => ({
         loading: false,
       }));
 
-      toast.success("Bird created successfully");
+      toast.success("Data sapi berhasil ditambahkan");
       return newDataSapi;
     } catch (error: any) {
       const errorMessage =
-        error.response?.data?.message || "Failed to create jenis penyakit";
+        error.response?.data?.message || "Gagal menambahkan data sapi";
       set({ error: errorMessage, loading: false });
       toast.error(errorMessage);
       return null;
@@ -106,11 +111,11 @@ export const useDataSapiStore = create<DataSapiState>((set) => ({
         loading: false,
       }));
 
-      toast.success("Bird updated successfully");
+      toast.success("Data sapi berhasil diperbarui");
       return updatedDataSapi;
     } catch (error: any) {
       const errorMessage =
-        error.response?.data?.message || "Failed to update jenis penyakit";
+        error.response?.data?.message || "Gagal memperbarui data sapi";
       set({ error: errorMessage, loading: false });
       toast.error(errorMessage);
       return null;
@@ -129,11 +134,11 @@ export const useDataSapiStore = create<DataSapiState>((set) => ({
         loading: false,
       }));
 
-      toast.success("Bird deleted successfully");
+      toast.success("Data sapi berhasil dihapus");
       return true;
     } catch (error: any) {
       const errorMessage =
-        error.response?.data?.message || "Failed to delete jenis penyakit";
+        error.response?.data?.message || "Gagal menghapus data sapi";
       set({ error: errorMessage, loading: false });
       toast.error(errorMessage);
       return false;

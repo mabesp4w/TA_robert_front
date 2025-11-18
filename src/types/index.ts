@@ -25,6 +25,7 @@ export interface JenisPenyakit {
 
 export interface DataSapi {
   id: string;
+  no_sapi?: string;
   pemilik: string;
   pemilik_detail?: Pemilik;
   nm_sapi?: string;
@@ -37,22 +38,20 @@ export interface DataSapi {
   umur_tahun?: number;
   umur_display?: string;
   catatan?: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Pemilik {
   id: string;
-  kd_pemilik: string;
   nm_pemilik: string;
-  email: string;
-  no_hp: string;
-  alamat: string;
+  email?: string;
+  no_hp?: string;
+  no_telepon?: string | null;
+  alamat?: string;
   jenis_pemilik: "perorangan" | "kelompok" | "koperasi" | "perusahaan";
   max_sapi: number;
   status_aktif: boolean;
   tgl_registrasi: string;
-  catatan?: string;
+  catatan?: string | null;
   created_at?: string;
   updated_at?: string;
 
@@ -61,6 +60,11 @@ export interface Pemilik {
   sapi_sehat?: number;
   sapi_sakit?: number;
   persentase_kapasitas?: number;
+  can_add_more_sapi?: boolean;
+  distribusi_sapi?: {
+    [key: string]: number;
+  };
+  daftar_sapi?: DataSapi[];
 }
 
 export interface StatistikPemilik {

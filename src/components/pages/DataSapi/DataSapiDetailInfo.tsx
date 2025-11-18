@@ -74,6 +74,42 @@ const DataSapiDetailInfo = ({ sapi }: DataSapiDetailInfoProps) => {
         </div>
 
         <div className="space-y-4">
+          {/* Pemilik - Paling Atas */}
+          {sapi.pemilik_detail && (
+            <div className="flex items-center space-x-3 p-3 bg-success/5 rounded-lg border border-success/20">
+              <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
+                <span className="text-lg">👤</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-base-content/70">Pemilik</p>
+                <p className="font-semibold text-lg">{sapi.pemilik_detail.nm_pemilik}</p>
+                <p className="text-xs text-base-content/60 capitalize">
+                  {sapi.pemilik_detail.jenis_pemilik}
+                </p>
+                {sapi.pemilik_detail.no_hp && (
+                  <p className="text-xs text-base-content/50 mt-1">
+                    📞 {sapi.pemilik_detail.no_hp}
+                  </p>
+                )}
+                {sapi.pemilik_detail.email && (
+                  <p className="text-xs text-base-content/50">
+                    ✉️ {sapi.pemilik_detail.email}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* No Sapi */}
+          {sapi.no_sapi && (
+            <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+              <span className="text-sm font-medium">Nomor Sapi</span>
+              <span className="text-sm font-mono font-semibold">
+                {sapi.no_sapi}
+              </span>
+            </div>
+          )}
+
           {/* ID */}
           <div className="flex items-center justify-between p-3 bg-base-200 rounded-lg">
             <span className="text-sm font-medium">ID Sapi</span>

@@ -71,13 +71,27 @@ export const usePemilikStore = create<PemilikState>((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await pemilikCRUD.getById(id);
+      
+      // Response structure: { status: 'success', message: '...', results: { ... pemilik data ... } }
+      // Extract the actual pemilik data from response.results
+      const data = response?.results;
+      
+      if (!data) {
+        console.error("No results in response:", response);
+        set({ loading: false });
+        throw new Error("Data pemilik tidak ditemukan");
+      }
+      
       set({
-        currentPemilik: response.results,
+        currentPemilik: data as Pemilik,
         loading: false,
       });
     } catch (error: any) {
+      console.error("Error fetching pemilik:", error);
       const errorMessage =
-        error.response?.data?.message || "Failed to fetch pemilik";
+        error.response?.data?.message ||
+        error.message ||
+        "Gagal mengambil data pemilik";
       set({ error: errorMessage, loading: false });
       toast.error(errorMessage);
     }

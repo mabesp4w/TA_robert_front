@@ -8,6 +8,7 @@ import { useFuzzyCalculationStore } from "@/stores/api/fuzzyCalculationStore";
 import { FuzzificationStep } from "@/components/Fuzzy/FuzzificationStep";
 import { InferenceStep } from "@/components/Fuzzy/InferenceStep";
 import { DefuzzificationStep } from "@/components/Fuzzy/DefuzzificationStep";
+import { DiseaseConclusion } from "@/components/Fuzzy/DiseaseConclusion";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { ManualInputForm } from "@/types/fuzzy";
@@ -460,6 +461,13 @@ export default function FuzzyCalculationPage() {
                 Selanjutnya
               </button>
             </div>
+
+            {/* Disease Conclusion - Show after step 3 */}
+            {currentStep === 3 && (
+              <div className="mt-8">
+                <DiseaseConclusion />
+              </div>
+            )}
           </>
         )}
       </div>

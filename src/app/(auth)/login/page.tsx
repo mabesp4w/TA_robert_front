@@ -19,7 +19,7 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   // store
-  const { login, isAuthenticated } = useAuthStore();
+  const { login, isAuthenticated, user } = useAuthStore();
   // router
   const router = useRouter();
   const {
@@ -40,10 +40,24 @@ const LoginPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/admin/dashboard");
+    if (isAuthenticated && user) {
+      // Helper untuk get role name (handle string atau object)
+      const getUserRoleName = (): string | undefined => {
+        if (!user.role) return undefined;
+        if (typeof user.role === 'string') return user.role;
+        return user.role.name;
+      };
+
+      const roleName = getUserRoleName();
+      
+      // Redirect berdasarkan role
+      if (roleName?.toLowerCase() === "pemilik") {
+        router.push("/pemilik/dashboard");
+      } else {
+        router.push("/admin/dashboard");
+      }
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-purple-700 flex items-center justify-center p-4">

@@ -52,6 +52,8 @@ export interface Pemilik {
   status_aktif: boolean;
   tgl_registrasi: string;
   catatan?: string | null;
+  password?: string; // Password untuk create/update user
+  show_password?: string; // Password dari user untuk ditampilkan
   created_at?: string;
   updated_at?: string;
 

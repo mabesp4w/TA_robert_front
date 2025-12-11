@@ -233,6 +233,13 @@ export const pemilikCRUD = {
     );
     return response.data;
   },
+
+  getMyProfile: async (): Promise<DetailResponse<Pemilik>> => {
+    const response: AxiosResponse<DetailResponse<Pemilik>> = await crud.get(
+      "/pemilik/my-profile/"
+    );
+    return response.data;
+  },
 };
 
 // Parameter Gejala CRUD

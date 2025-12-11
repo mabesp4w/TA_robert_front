@@ -39,6 +39,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     performAuthCheck();
   }, [checkAuth]);
 
+  // Redirect to auth if authentication is required but user is not authenticated
+  useEffect(() => {
+    if (!loading && !isChecking && requireAuth && !isAuthenticated) {
+      router.push(redirectTo);
+    }
+  }, [loading, isChecking, requireAuth, isAuthenticated, redirectTo, router]);
+
   // Show loading while checking authentication
   if (loading || isChecking) {
     return (
@@ -48,11 +55,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // Redirect to auth if authentication is required but user is not authenticated
+  // Don't render if not authenticated (will redirect via useEffect)
   if (requireAuth && !isAuthenticated) {
-    if (typeof window !== "undefined") {
-      router.push(redirectTo);
-    }
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />
@@ -62,13 +66,64 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Check role-based access
   if (requiredRoles.length > 0 && user) {
-    const hasRequiredRole = requiredRoles.some((role) => hasRole(role));
+    // Helper untuk get role name (handle string atau object)
+    const getUserRoleName = (): string | undefined => {
+      if (!user.role) return undefined;
+      if (typeof user.role === 'string') return user.role;
+      return user.role.name;
+    };
+
+    const userRoleName = getUserRoleName();
+
+    // Debug: Log user info untuk troubleshooting
+    console.log("ProtectedRoute - Role Check:", {
+      userRole: userRoleName,
+      userRoleType: typeof user.role,
+      requiredRoles,
+      userObject: user
+    });
+
+    // Helper function untuk check role (case-insensitive)
+    const checkRoleMatch = (userRole: string | undefined, requiredRole: string): boolean => {
+      if (!userRole) return false;
+      const normalizedUserRole = userRole.toLowerCase().trim();
+      const normalizedRequiredRole = requiredRole.toLowerCase().trim();
+      return normalizedUserRole === normalizedRequiredRole;
+    };
+
+    const hasRequiredRole = requiredRoles.some((role) => {
+      // Coba dengan hasRole dulu
+      if (hasRole(role)) return true;
+      // Fallback: check langsung dengan role name (case-insensitive)
+      if (userRoleName) {
+        return checkRoleMatch(userRoleName, role);
+      }
+      return false;
+    });
+
     if (!hasRequiredRole) {
+      // Debug log untuk membantu troubleshooting
+      console.log("Access Denied - Role Check:", {
+        userRole: userRoleName,
+        userRoleType: typeof user.role,
+        requiredRoles,
+        hasRoleResult: requiredRoles.map(role => ({
+          role,
+          hasRole: hasRole(role),
+          directMatch: userRoleName ? checkRoleMatch(userRoleName, role) : false
+        }))
+      });
+
+      // Get user role name untuk display
+      const displayRoleName = typeof user.role === 'string' 
+        ? user.role 
+        : user.role?.name;
+
       return (
         <AccessDenied
           type="role"
           requiredRoles={requiredRoles}
-          userRole={user.role.name}
+          userRole={displayRoleName}
           fallback={fallback}
         />
       );

@@ -3,6 +3,7 @@
 
 "use client";
 
+import { useState } from "react";
 import { Pemilik } from "@/types";
 import {
   EnvelopeIcon,
@@ -11,6 +12,9 @@ import {
   BuildingOfficeIcon,
   CalendarIcon,
   DocumentTextIcon,
+  LockClosedIcon,
+  EyeIcon,
+  EyeSlashIcon,
 } from "@heroicons/react/24/outline";
 import moment from "moment";
 
@@ -19,6 +23,8 @@ interface PemilikDetailInfoProps {
 }
 
 const PemilikDetailInfo = ({ pemilik }: PemilikDetailInfoProps) => {
+  const [showPassword, setShowPassword] = useState(false);
+
   // Extract actual pemilik data if it's wrapped in response object
   // This is a safety check in case the store didn't extract properly
   // If pemilik has 'results' property, extract it; otherwise use pemilik directly
@@ -127,6 +133,36 @@ const PemilikDetailInfo = ({ pemilik }: PemilikDetailInfoProps) => {
                   <p className="font-semibold">{actualPemilik.no_hp || "-"}</p>
                 </div>
               </div>
+
+              {actualPemilik.show_password && (
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center mt-1">
+                    <LockClosedIcon className="h-5 w-5 text-warning" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-base-content/70">Password Login</p>
+                    <div className="bg-base-200 p-2 rounded-lg mt-1 relative">
+                      <p className="font-mono text-sm font-semibold pr-8">
+                        {showPassword
+                          ? actualPemilik.show_password
+                          : "•".repeat(actualPemilik.show_password.length)}
+                      </p>
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 pr-2 flex items-center"
+                        onClick={() => setShowPassword(!showPassword)}
+                        title={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                      >
+                        {showPassword ? (
+                          <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                        ) : (
+                          <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-start space-x-3">
                 <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center mt-1">

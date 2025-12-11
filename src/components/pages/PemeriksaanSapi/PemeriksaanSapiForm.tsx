@@ -12,12 +12,16 @@ interface PemeriksaanSapiFormProps {
   initialData?: Partial<PemeriksaanSapi>;
   onSuccess?: (data: PemeriksaanSapi) => void;
   onCancel?: () => void;
+  sapiList?: any[];
+  disableSapiSelect?: boolean;
 }
 
 const PemeriksaanSapiForm = ({
   initialData,
   onSuccess,
   onCancel,
+  sapiList,
+  disableSapiSelect = false,
 }: PemeriksaanSapiFormProps) => {
   const { createPemeriksaanSapi, updatePemeriksaanSapi, loading } =
     usePemeriksaanSapiStore();
@@ -41,9 +45,11 @@ const PemeriksaanSapiForm = ({
   const aktivitas = watch("aktivitas");
 
   useEffect(() => {
-    // Fetch data sapi untuk dropdown
-    fetchDataSapis();
-  }, [fetchDataSapis]);
+    // Fetch data sapi untuk dropdown (hanya jika sapiList tidak disediakan)
+    if (!sapiList || sapiList.length === 0) {
+      fetchDataSapis();
+    }
+  }, [fetchDataSapis, sapiList]);
 
   useEffect(() => {
     if (initialData) {
@@ -140,9 +146,10 @@ const PemeriksaanSapiForm = ({
     }
   };
 
-  // Gunakan useMemo agar reactive terhadap perubahan dataSapi
+  // Gunakan useMemo agar reactive terhadap perubahan dataSapi atau sapiList
   const sapiOptions = useMemo(() => {
-    return dataSapi
+    const sourceList = sapiList && sapiList.length > 0 ? sapiList : dataSapi;
+    return sourceList
       .filter((sapi) => sapi && sapi.id) // Hanya filter sapi yang memiliki ID
       .map((sapi) => ({
         value: sapi.id,
@@ -152,7 +159,7 @@ const PemeriksaanSapiForm = ({
           sapi.berat_kg ? `, ${sapi.berat_kg} kg` : ""
         }${sapi.jenkel ? ")" : ""}`,
       }));
-  }, [dataSapi]);
+  }, [dataSapi, sapiList]);
 
   const getStatusBadge = (paramKey: string) => {
     const param = parameterStatus[paramKey];
@@ -213,7 +220,7 @@ const PemeriksaanSapiForm = ({
                   required: "Sapi harus dipilih",
                 })}
                 error={errors.sapi?.message}
-                disabled={loadingSapi || sapiOptions.length === 0}
+                disabled={disableSapiSelect || loadingSapi || sapiOptions.length === 0}
               />
               {!loadingSapi && sapiOptions.length === 0 && (
                 <p className="text-xs text-warning mt-1">

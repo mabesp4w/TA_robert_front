@@ -12,12 +12,14 @@ interface DataSapiFormProps {
   initialData?: Partial<DataSapi>;
   onSuccess?: (data: DataSapi) => void;
   onCancel?: () => void;
+  disablePemilikSelect?: boolean;
 }
 
 const DataSapiForm = ({
   initialData,
   onSuccess,
   onCancel,
+  disablePemilikSelect = false,
 }: DataSapiFormProps) => {
   const { createDataSapi, updateDataSapi, loading } = useDataSapiStore();
   const { pemiliks, fetchPemiliks, loading: loadingPemilik } = usePemilikStore();
@@ -182,16 +184,43 @@ const DataSapiForm = ({
       </div>
 
       {/* Pemilik - Required */}
-      <FormSelect
-        label="Pemilik"
-        required
-        options={pemilikOptions}
-        disabled={loadingPemilik}
-        {...register("pemilik", {
-          required: "Pemilik harus dipilih",
-        })}
-        error={(errors.pemilik as any)?.message}
-      />
+      {disablePemilikSelect ? (
+        <div className="form-control w-full">
+          <label className="label">
+            <span className="label-text">
+              Pemilik
+              <span className="text-error ml-1">*</span>
+            </span>
+          </label>
+          <input
+            type="text"
+            className="input input-bordered w-full bg-base-200"
+            value={
+              pemiliks.find((p) => p.id === initialData?.pemilik)?.nm_pemilik ||
+              "Pemilik Anda"
+            }
+            readOnly
+            disabled
+          />
+          <input
+            type="hidden"
+            {...register("pemilik", {
+              required: "Pemilik harus dipilih",
+            })}
+          />
+        </div>
+      ) : (
+        <FormSelect
+          label="Pemilik"
+          required
+          options={pemilikOptions}
+          disabled={loadingPemilik}
+          {...register("pemilik", {
+            required: "Pemilik harus dipilih",
+          })}
+          error={(errors.pemilik as any)?.message}
+        />
+      )}
 
       <FormInput
         label="Nama Sapi"

@@ -99,6 +99,7 @@ export const USER_ROLES = {
   RESEARCHER: "researcher",
   CONTRIBUTOR: "contributor",
   VIEWER: "viewer",
+  PEMILIK: "pemilik",
 } as const;
 
 // Predefined permissions

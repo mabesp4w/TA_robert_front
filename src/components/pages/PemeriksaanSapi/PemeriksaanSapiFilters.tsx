@@ -16,25 +16,31 @@ interface PemeriksaanSapiFiltersProps {
   };
   onFilterChange: (filters: any) => void;
   onClose: () => void;
+  sapiList?: any[];
 }
 
 const PemeriksaanSapiFilters = ({
   filters,
   onFilterChange,
   onClose,
+  sapiList,
 }: PemeriksaanSapiFiltersProps) => {
   const [localFilters, setLocalFilters] = useState(filters);
   const { dataSapi, fetchDataSapis } = useDataSapiStore();
 
   useEffect(() => {
-    fetchDataSapis();
-  }, [fetchDataSapis]);
+    // Hanya fetch jika sapiList tidak disediakan
+    if (!sapiList || sapiList.length === 0) {
+      fetchDataSapis();
+    }
+  }, [fetchDataSapis, sapiList]);
 
-  // Gunakan useMemo agar reactive terhadap perubahan dataSapi
+  // Gunakan useMemo agar reactive terhadap perubahan dataSapi atau sapiList
   const sapiOptions = useMemo(() => {
+    const sourceList = sapiList && sapiList.length > 0 ? sapiList : dataSapi;
     return [
       { value: "", label: "Semua Sapi" },
-      ...dataSapi
+      ...sourceList
         .filter((sapi) => sapi && sapi.id) // Hanya filter sapi yang memiliki ID
         .map((sapi) => ({
           value: sapi.id,
@@ -43,7 +49,7 @@ const PemeriksaanSapiFilters = ({
           }`,
         })),
     ];
-  }, [dataSapi]);
+  }, [dataSapi, sapiList]);
 
   const orderingOptions = [
     { value: "-tgl_pemeriksaan", label: "Terbaru Dulu" },

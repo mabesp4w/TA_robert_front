@@ -54,8 +54,25 @@ export const useAuthStore = create<AuthStore>()(
           });
           console.log({ response });
 
+          // Normalize user object - handle jika role adalah string langsung
+          const userData = response.data.user;
+          let normalizedUser = userData;
+          
+          // Jika role adalah string, convert ke object format
+          if (typeof userData.role === 'string') {
+            normalizedUser = {
+              ...userData,
+              role: {
+                id: userData.role,
+                name: userData.role,
+                permissions: [],
+                description: userData.role
+              }
+            };
+          }
+
           set({
-            user: response.data.user,
+            user: normalizedUser,
             token: response.data.access_token,
             isAuthenticated: true,
             loading: false,
@@ -215,8 +232,32 @@ export const useAuthStore = create<AuthStore>()(
 
       hasRole: (role: string) => {
         const user = get().user;
-        if (!user) return false;
-        return user.role.name === role || user.role.id === role;
+        if (!user || !user.role) return false;
+        
+        // Handle jika role adalah string langsung (dari backend)
+        let userRoleName: string | undefined;
+        let userRoleId: string | undefined;
+        
+        if (typeof user.role === 'string') {
+          userRoleName = user.role;
+          userRoleId = user.role;
+        } else {
+          userRoleName = user.role.name;
+          userRoleId = user.role.id;
+        }
+        
+        // Check exact match
+        if (userRoleName === role || userRoleId === role) return true;
+        
+        // Check case-insensitive match
+        const normalizedUserRole = userRoleName?.toLowerCase().trim();
+        const targetRole = role?.toLowerCase().trim();
+        if (normalizedUserRole === targetRole) return true;
+        
+        // Check if role name contains target role (for variations like "super_admin" vs "super admin")
+        if (normalizedUserRole && targetRole && normalizedUserRole.includes(targetRole)) return true;
+        
+        return false;
       },
     }),
     {

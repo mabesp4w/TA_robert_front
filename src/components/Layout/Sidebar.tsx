@@ -1,7 +1,7 @@
 /** @format */
 
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   HomeIcon,
   UserGroupIcon,
@@ -10,6 +10,7 @@ import {
   ArrowRightOnRectangleIcon,
   ChevronDownIcon,
   ChevronRightIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth/authStore";
@@ -109,75 +110,139 @@ const MenuItemComponent: React.FC<{
 const Sidebar: React.FC = () => {
   const router = useRouter();
   const pathName = usePathname();
-  const { logout } = useAuthStore();
+  const { logout, user } = useAuthStore();
 
   // State for expanded menu items
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
+  // Helper function untuk check role (case-insensitive dan multiple formats)
+  const checkRole = (roleName: string | undefined, targetRoles: string[]): boolean => {
+    if (!roleName) return false;
+    const normalizedRole = roleName.toLowerCase().trim();
+    return targetRoles.some(target => 
+      normalizedRole === target.toLowerCase() || 
+      normalizedRole.includes(target.toLowerCase())
+    );
+  };
+
+  // Helper untuk get role name (handle string atau object)
+  const getUserRoleName = useCallback((): string | undefined => {
+    if (!user?.role) return undefined;
+    if (typeof user.role === 'string') return user.role;
+    return user.role.name;
+  }, [user]);
+
   // Memoized menu items to prevent unnecessary re-renders
-  const menuItems: MenuItem[] = useMemo(
-    () => [
+  const menuItems: MenuItem[] = useMemo(() => {
+    const roleName = getUserRoleName();
+    const isAdminPath = pathName.startsWith("/admin");
+    const isPemilikPath = pathName.startsWith("/pemilik");
+
+    // Menu untuk admin (check multiple formats atau jika sedang di path admin)
+    if (checkRole(roleName, ["admin", "super_admin", "super admin"]) || 
+        (isAdminPath && !isPemilikPath)) {
+      return [
+        {
+          title: "Dashboard",
+          icon: HomeIcon,
+          href: "/admin/dashboard",
+          active: pathName === "/admin/dashboard",
+        },
+        {
+          title: "Jenis Penyakit",
+          icon: UserGroupIcon,
+          href: "/admin/jenis-penyakit",
+          active: pathName.startsWith("/admin/jenis-penyakit"),
+        },
+        {
+          title: "Pemilik",
+          icon: UserGroupIcon,
+          href: "/admin/pemilik",
+          active: pathName.startsWith("/admin/pemilik"),
+        },
+        {
+          title: "Data Sapi",
+          icon: UserGroupIcon,
+          href: "/admin/sapi",
+          active: pathName.startsWith("/admin/sapi"),
+        },
+        {
+          title: "Pemeriksaan",
+          icon: ClipboardDocumentListIcon,
+          href: "/admin/pemeriksaan",
+          active: pathName.startsWith("/admin/pemeriksaan"),
+        },
+        {
+          title: "Fuzzy Mamdani",
+          icon: BeakerIcon,
+          href: "/admin/fuzzy",
+          active: pathName.startsWith("/admin/fuzzy"),
+          children: [
+            {
+              title: "Parameter Fuzzy",
+              href: "/admin/fuzzy/parameter",
+              active: pathName.startsWith("/admin/fuzzy/parameter"),
+            },
+            {
+              title: "Fungsi Keanggotaan",
+              href: "/admin/fuzzy/fungsi-keanggotaan",
+              active: pathName.startsWith("/admin/fuzzy/fungsi-keanggotaan"),
+            },
+            {
+              title: "Aturan Fuzzy",
+              href: "/admin/fuzzy/aturan",
+              active: pathName.startsWith("/admin/fuzzy/aturan"),
+            },
+            {
+              title: "Analisa",
+              href: "/admin/fuzzy/analisa",
+              active: pathName.startsWith("/admin/fuzzy/analisa"),
+            },
+          ],
+        },
+      ];
+    }
+
+        // Menu untuk pemilik
+        if (checkRole(roleName, ["pemilik"])) {
+          return [
+            {
+              title: "Dashboard",
+              icon: HomeIcon,
+              href: "/pemilik/dashboard",
+              active: pathName === "/pemilik/dashboard",
+            },
+            {
+              title: "Sapi Saya",
+              icon: UserGroupIcon,
+              href: "/pemilik/sapi",
+              active: pathName.startsWith("/pemilik/sapi"),
+            },
+            {
+              title: "Pemeriksaan",
+              icon: ClipboardDocumentListIcon,
+              href: "/pemilik/pemeriksaan",
+              active: pathName.startsWith("/pemilik/pemeriksaan"),
+            },
+            {
+              title: "Profil Saya",
+              icon: UserCircleIcon,
+              href: "/pemilik/profil",
+              active: pathName.startsWith("/pemilik/profil"),
+            },
+          ];
+        }
+
+    // Default menu (untuk user umum atau belum login)
+    return [
       {
         title: "Dashboard",
         icon: HomeIcon,
-        href: "/admin/dashboard",
-        active: pathName === "/admin/dashboard",
+        href: "/",
+        active: pathName === "/",
       },
-      {
-        title: "Jenis Penyakit",
-        icon: UserGroupIcon,
-        href: "/admin/jenis-penyakit",
-        active: pathName.startsWith("/admin/jenis-penyakit"),
-      },
-      {
-        title: "Pemilik",
-        icon: UserGroupIcon,
-        href: "/admin/pemilik",
-        active: pathName.startsWith("/admin/pemilik"),
-      },
-      {
-        title: "Data Sapi",
-        icon: UserGroupIcon,
-        href: "/admin/sapi",
-        active: pathName.startsWith("/admin/sapi"),
-      },
-      {
-        title: "Pemeriksaan",
-        icon: ClipboardDocumentListIcon,
-        href: "/admin/pemeriksaan",
-        active: pathName.startsWith("/admin/pemeriksaan"),
-      },
-      {
-        title: "Fuzzy Mamdani",
-        icon: BeakerIcon,
-        href: "/admin/fuzzy",
-        active: pathName.startsWith("/admin/fuzzy"),
-        children: [
-          {
-            title: "Parameter Fuzzy",
-            href: "/admin/fuzzy/parameter",
-            active: pathName.startsWith("/admin/fuzzy/parameter"),
-          },
-          {
-            title: "Fungsi Keanggotaan",
-            href: "/admin/fuzzy/fungsi-keanggotaan",
-            active: pathName.startsWith("/admin/fuzzy/fungsi-keanggotaan"),
-          },
-          {
-            title: "Aturan Fuzzy",
-            href: "/admin/fuzzy/aturan",
-            active: pathName.startsWith("/admin/fuzzy/aturan"),
-          },
-          {
-            title: "Analisa",
-            href: "/admin/fuzzy/analisa",
-            active: pathName.startsWith("/admin/fuzzy/analisa"),
-          },
-        ],
-      },
-    ],
-    [pathName]
-  );
+    ];
+  }, [pathName, getUserRoleName]);
 
   // Auto-expand menu items that have active children
   useMemo(() => {
@@ -218,7 +283,11 @@ const Sidebar: React.FC = () => {
         <div className="navbar px-4">
           <div className="flex-1">
             <Link
-              href="/admin/dashboard"
+              href={
+                getUserRoleName()?.toLowerCase() === "pemilik"
+                  ? "/pemilik/dashboard"
+                  : "/admin/dashboard"
+              }
               className="btn btn-ghost text-xl font-bold hover:scale-105 transition-transform"
             >
               🐄 Deteksi Penyakit Sapi

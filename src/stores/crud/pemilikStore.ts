@@ -38,6 +38,7 @@ interface PemilikState {
   fetchStatistikSapiPemilik: (id: string) => Promise<any>;
   fetchStatistikUmum: () => Promise<void>;
   fetchPemilikPerluPerhatian: () => Promise<void>;
+  fetchMyProfile: () => Promise<void>;
   clearCurrentPemilik: () => void;
   clearError: () => void;
 }
@@ -294,6 +295,36 @@ export const usePemilikStore = create<PemilikState>((set) => ({
 
   clearCurrentPemilik: () => {
     set({ currentPemilik: null });
+  },
+
+  fetchMyProfile: async () => {
+    set({ loading: true, error: null });
+    try {
+      const response = await pemilikCRUD.getMyProfile();
+      const data = response?.results;
+      
+      if (!data) {
+        throw new Error("Data pemilik tidak ditemukan");
+      }
+      
+      set({
+        currentPemilik: data as Pemilik,
+        loading: false,
+        error: null,
+      });
+    } catch (error: any) {
+      console.error("Error fetching my profile:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Gagal mengambil data pemilik";
+      set({ 
+        error: errorMessage, 
+        loading: false,
+        currentPemilik: null 
+      });
+      toast.error(errorMessage);
+    }
   },
 
   clearError: () => {

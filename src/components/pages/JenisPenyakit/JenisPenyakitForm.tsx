@@ -36,7 +36,6 @@ const JenisPenyakitForm = ({
     formState: { errors },
     reset,
     setValue,
-    watch,
   } = useForm<JenisPenyakit>();
 
   useEffect(() => {

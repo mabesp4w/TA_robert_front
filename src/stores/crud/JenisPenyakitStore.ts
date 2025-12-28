@@ -61,10 +61,9 @@ export const useJenisPenyakitStore = create<JenisPenyakitState>((set) => ({
       let data = null;
       if (response.results) {
         data = response.results;
-      } else if (response.data) {
-        data = response.data;
       } else if (response && typeof response === 'object' && 'id' in response) {
-        data = response;
+        // Fallback: if response itself is the data object
+        data = response as any;
       }
       
       if (data && data.id) {

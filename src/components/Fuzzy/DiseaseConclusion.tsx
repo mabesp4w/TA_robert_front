@@ -15,6 +15,7 @@ interface DiseaseData {
   gejala_umum?: string;
   pengobatan?: string;
   pencegahan?: string;
+  gambar_url?: string | null;
   total_score: number;
   rules_count: number;
   max_activation: number;
@@ -113,13 +114,27 @@ export const DiseaseConclusion: React.FC = () => {
       {/* Primary Disease - Most Likely */}
       {primaryDiseaseData && (
         <div className="card bg-base-100 shadow-xl border-2 border-primary">
+          {/* Disease Image */}
+          {primaryDiseaseData.gambar_url && (
+            <figure className="h-64 overflow-hidden">
+              <img
+                src={primaryDiseaseData.gambar_url}
+                alt={primaryDiseaseData.nm_penyakit || "Gambar Penyakit"}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.error("Error loading disease image:", primaryDiseaseData.gambar_url);
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </figure>
+          )}
           <div className="card-body">
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="card-title text-2xl text-primary mb-2">
                   {primaryDiseaseData.nm_penyakit || primaryDisease[0]}
                 </h3>
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-2 items-center flex-wrap">
                   <div className={`badge ${getSeverityBadge(primaryDiseaseData.tingkat_bahaya || primaryDiseaseData.severity)}`}>
                     {getSeverityLabel(primaryDiseaseData.tingkat_bahaya || primaryDiseaseData.severity)}
                   </div>
@@ -223,13 +238,27 @@ export const DiseaseConclusion: React.FC = () => {
                     key={diseaseName}
                     className="card bg-base-200 shadow-md"
                   >
+                    {/* Disease Image */}
+                    {diseaseData.gambar_url && (
+                      <figure className="h-48 overflow-hidden">
+                        <img
+                          src={diseaseData.gambar_url}
+                          alt={diseaseData.nm_penyakit || "Gambar Penyakit"}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            console.error("Error loading disease image:", diseaseData.gambar_url);
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </figure>
+                    )}
                     <div className="card-body">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <h4 className="font-semibold text-lg mb-2">
                             {index + 2}. {diseaseData.nm_penyakit || diseaseName}
                           </h4>
-                          <div className="flex gap-2 mb-2">
+                          <div className="flex gap-2 mb-2 flex-wrap">
                             <div
                               className={`badge ${getSeverityBadge(diseaseData.tingkat_bahaya || diseaseData.severity)}`}
                             >

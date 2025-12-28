@@ -34,19 +34,35 @@ export const jenisPenyakitCRUD = {
   },
 
   create: async (
-    data: JenisPenyakit
+    data: JenisPenyakit | FormData
   ): Promise<DetailResponse<JenisPenyakit>> => {
+    const isFormData = data instanceof FormData;
+    const config = isFormData
+      ? {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      : {};
     const response: AxiosResponse<DetailResponse<JenisPenyakit>> =
-      await crud.post("/jenis-penyakit/", data);
+      await crud.post("/jenis-penyakit/", data, config);
     return response.data;
   },
 
   update: async (
     id: string,
-    data: JenisPenyakit
+    data: JenisPenyakit | FormData
   ): Promise<DetailResponse<JenisPenyakit>> => {
+    const isFormData = data instanceof FormData;
+    const config = isFormData
+      ? {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      : {};
     const response: AxiosResponse<DetailResponse<JenisPenyakit>> =
-      await crud.patch(`/jenis-penyakit/${id}/`, data);
+      await crud.patch(`/jenis-penyakit/${id}/`, data, config);
     return response.data;
   },
 
@@ -363,6 +379,16 @@ export const pemeriksaanSapiCRUD = {
   getTrendMingguan: async (): Promise<DetailResponse<any>> => {
     const response: AxiosResponse<DetailResponse<any>> = await crud.get(
       "/pemeriksaan-sapi/trend_mingguan/"
+    );
+    return response.data;
+  },
+
+  exportPdf: async (id: string): Promise<Blob> => {
+    const response: AxiosResponse<Blob> = await crud.get(
+      `/pemeriksaan-sapi/${id}/export_pdf/`,
+      {
+        responseType: 'blob', // Important: set responseType to blob
+      }
     );
     return response.data;
   },

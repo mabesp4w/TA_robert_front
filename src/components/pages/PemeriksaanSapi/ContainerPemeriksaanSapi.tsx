@@ -13,11 +13,14 @@ import {
   ChartBarIcon,
   DocumentChartBarIcon,
   CalendarIcon,
+  ArrowDownTrayIcon,
 } from "@heroicons/react/24/outline";
 import { PemeriksaanSapi } from "@/types";
 import { useRouter } from "next/navigation";
 import PemeriksaanSapiForm from "./PemeriksaanSapiForm";
 import PemeriksaanSapiFilters from "./PemeriksaanSapiFilters";
+import { pemeriksaanSapiCRUD } from "@/services/crudService";
+import toast from "react-hot-toast";
 import moment from "moment";
 
 export default function ContainerPemeriksaanSapi() {
@@ -42,6 +45,7 @@ export default function ContainerPemeriksaanSapi() {
   const [selectedDate, setSelectedDate] = useState(
     moment().format("YYYY-MM-DD")
   );
+  const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState({
     search: "",
     sapi: "",
@@ -92,6 +96,44 @@ export default function ContainerPemeriksaanSapi() {
   const handleShowTrendMingguan = () => {
     fetchTrendMingguan();
     setShowTrendMingguan(true);
+  };
+
+  const handleExportPdf = async (pemeriksaan: PemeriksaanSapi) => {
+    if (downloadingIds.has(pemeriksaan.id)) return;
+
+    setDownloadingIds((prev) => new Set(prev).add(pemeriksaan.id));
+    try {
+      const blob = await pemeriksaanSapiCRUD.exportPdf(pemeriksaan.id);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename
+      const sapiName = pemeriksaan.sapi_detail?.nm_sapi || `Sapi_${pemeriksaan.id.slice(0, 8)}`;
+      const tglPemeriksaan = new Date(pemeriksaan.tgl_pemeriksaan)
+        .toISOString()
+        .replace(/[:.]/g, '-')
+        .slice(0, 16);
+      link.download = `Laporan_Pemeriksaan_${sapiName}_${tglPemeriksaan}.pdf`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("PDF berhasil diunduh");
+    } catch (error: any) {
+      console.error("Error exporting PDF:", error);
+      toast.error(error.response?.data?.message || "Gagal mengunduh PDF");
+    } finally {
+      setDownloadingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(pemeriksaan.id);
+        return newSet;
+      });
+    }
   };
 
   // Group pemeriksaan by date for better visualization
@@ -257,6 +299,8 @@ export default function ContainerPemeriksaanSapi() {
                           onView={handleView}
                           onEdit={handleEdit}
                           onDelete={handleDelete}
+                          onExport={() => handleExportPdf(pemeriksaan)}
+                          isExporting={downloadingIds.has(pemeriksaan.id)}
                         />
                       ))}
                     </div>

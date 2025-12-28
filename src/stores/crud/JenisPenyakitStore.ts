@@ -52,17 +52,47 @@ export const useJenisPenyakitStore = create<JenisPenyakitState>((set) => ({
   },
 
   fetchJenisPenyakitById: async (id: string) => {
-    set({ loading: true, error: null });
+    set({ loading: true, error: null, currentJenisPenyakit: null });
     try {
       const response = await jenisPenyakitCRUD.getById(id);
+      console.log("Response from API:", response);
+      
+      // Handle different response structures
+      let data = null;
+      if (response.results) {
+        data = response.results;
+      } else if (response.data) {
+        data = response.data;
+      } else if (response && typeof response === 'object' && 'id' in response) {
+        data = response;
+      }
+      
+      if (data && data.id) {
+        console.log("Setting currentJenisPenyakit:", data);
+        set({
+          currentJenisPenyakit: data,
+          loading: false,
+        });
+      } else {
+        console.error("Invalid data structure:", response);
       set({
-        currentJenisPenyakit: response.results,
+          error: "Data tidak ditemukan atau format tidak valid",
         loading: false,
       });
+        toast.error("Data jenis penyakit tidak ditemukan");
+      }
     } catch (error: any) {
+      console.error("Error fetching jenis penyakit:", error);
       const errorMessage =
-        error.response?.data?.message || "Failed to fetch jenis jenis penyakit";
-      set({ error: errorMessage, loading: false });
+        error.response?.data?.message || 
+        error.response?.data?.detail ||
+        error.message ||
+        "Gagal mengambil data jenis penyakit";
+      set({ 
+        error: errorMessage, 
+        loading: false,
+        currentJenisPenyakit: null 
+      });
       toast.error(errorMessage);
     }
   },

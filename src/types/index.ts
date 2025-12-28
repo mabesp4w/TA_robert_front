@@ -19,6 +19,9 @@ export interface JenisPenyakit {
   gejala_umum: string;
   pengobatan?: string;
   pencegahan?: string;
+  gambar?: string | null; // Deprecated - use gambar_url instead
+  gambar_url?: string | null; // URL API untuk gambar
+  aktif?: boolean;
   created_at: string;
   updated_at: string;
 }

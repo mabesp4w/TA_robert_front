@@ -2,6 +2,7 @@
 
 import { JenisPenyakit } from "@/types";
 import { EyeIcon, PencilIcon, TrashIcon } from "lucide-react";
+import { BASE_URL } from "@/services/baseURL";
 
 interface JenisPenyakitCardProps {
   jenisPenyakit: JenisPenyakit;
@@ -16,38 +17,51 @@ const JenisPenyakitCard = ({
   onEdit,
   onDelete,
 }: JenisPenyakitCardProps) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "sehat":
+  const getStatusColor = (tingkatBahaya: string) => {
+    switch (tingkatBahaya) {
+      case "ringan":
         return "badge-success";
-      case "sakit":
-        return "badge-error";
-      case "dalam_pengobatan":
+      case "sedang":
         return "badge-warning";
-      case "sembuh":
-        return "badge-info";
+      case "berat":
+        return "badge-error";
+      case "sangat_berat":
+        return "badge-error";
       default:
         return "badge-neutral";
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "sehat":
-        return "Sehat";
-      case "sakit":
-        return "Sakit";
-      case "dalam_pengobatan":
-        return "Dalam Pengobatan";
-      case "sembuh":
-        return "Sembuh";
+  const getStatusText = (tingkatBahaya: string) => {
+    switch (tingkatBahaya) {
+      case "ringan":
+        return "Ringan";
+      case "sedang":
+        return "Sedang";
+      case "berat":
+        return "Berat";
+      case "sangat_berat":
+        return "Sangat Berat";
       default:
-        return status;
+        return tingkatBahaya;
     }
   };
 
+  // Gunakan gambar_url dari API jika ada, fallback ke gambar lama
+  const imageUrl = jenisPenyakit.gambar_url || 
+    (jenisPenyakit.gambar ? `${BASE_URL}${jenisPenyakit.gambar}` : null);
+
   return (
     <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
+      {imageUrl && (
+        <figure className="h-48 overflow-hidden">
+          <img
+            src={imageUrl}
+            alt={jenisPenyakit.nm_penyakit}
+            className="w-full h-full object-cover"
+          />
+        </figure>
+      )}
       <div className="card-body">
         <div className="flex justify-between items-start">
           <h2 className="card-title">

@@ -5,7 +5,8 @@ import FormInput from "@/components/Forms/FormInput";
 import FormSelect from "@/components/Forms/FormSelect";
 import { useJenisPenyakitStore } from "@/stores/crud/JenisPenyakitStore";
 import { JenisPenyakit } from "@/types";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { BASE_URL } from "@/services/baseURL";
 
 interface JenisPenyakitFormProps {
   initialData?: Partial<JenisPenyakit>;
@@ -21,6 +22,12 @@ const JenisPenyakitForm = ({
   const { createJenisPenyakit, updateJenisPenyakit, loading } =
     useJenisPenyakitStore();
 
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(
+    initialData?.gambar_url || 
+    (initialData?.gambar ? `${BASE_URL}${initialData.gambar}` : null)
+  );
+
   console.log({ initialData });
 
   const {
@@ -29,6 +36,7 @@ const JenisPenyakitForm = ({
     formState: { errors },
     reset,
     setValue,
+    watch,
   } = useForm<JenisPenyakit>();
 
   useEffect(() => {
@@ -39,10 +47,51 @@ const JenisPenyakitForm = ({
       setValue("gejala_umum", initialData?.gejala_umum || "");
       setValue("pengobatan", initialData?.pengobatan || "");
       setValue("pencegahan", initialData?.pencegahan || "");
+      // Set preview image dari gambar_url atau gambar
+      if (initialData.gambar_url) {
+        setPreviewImage(initialData.gambar_url);
+      } else if (initialData.gambar) {
+        setPreviewImage(`${BASE_URL}${initialData.gambar}`);
+      }
     }
   }, [initialData, setValue]);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const onSubmit = async (data: Partial<JenisPenyakit>) => {
+    // Jika ada gambar yang dipilih, gunakan FormData
+    if (selectedImage) {
+      const formData = new FormData();
+      formData.append("nm_penyakit", data.nm_penyakit || "");
+      formData.append("deskripsi", data.deskripsi || "");
+      formData.append("tingkat_bahaya", data.tingkat_bahaya || "ringan");
+      formData.append("gejala_umum", data.gejala_umum || "");
+      if (data.pengobatan) formData.append("pengobatan", data.pengobatan);
+      if (data.pencegahan) formData.append("pencegahan", data.pencegahan);
+      formData.append("gambar", selectedImage);
+
+      const success = initialData?.id
+        ? await updateJenisPenyakit(initialData.id, formData as any)
+        : await createJenisPenyakit(formData as any);
+
+      if (success) {
+        reset();
+        setSelectedImage(null);
+        setPreviewImage(null);
+        onSuccess?.(data as JenisPenyakit);
+      }
+    } else {
+      // Jika tidak ada gambar baru, kirim data biasa
     const success = initialData?.id
       ? await updateJenisPenyakit(initialData.id, data as JenisPenyakit)
       : await createJenisPenyakit(data as JenisPenyakit);
@@ -50,6 +99,7 @@ const JenisPenyakitForm = ({
     if (success) {
       reset();
       onSuccess?.(data as JenisPenyakit);
+      }
     }
   };
 
@@ -126,6 +176,33 @@ const JenisPenyakitForm = ({
           })}
           error={errors.deskripsi?.message}
         />
+      </div>
+
+      {/* Image Upload */}
+      <div className="space-y-2">
+        <label className="label">
+          <span className="label-text">Gambar Penyakit</span>
+        </label>
+        <div className="flex flex-col gap-4">
+          {previewImage && (
+            <div className="relative w-full max-w-xs">
+              <img
+                src={previewImage}
+                alt="Preview"
+                className="w-full h-48 object-cover rounded-lg border-2 border-base-300"
+              />
+            </div>
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="file-input file-input-bordered w-full max-w-xs"
+          />
+          <p className="text-sm text-base-content/70">
+            Format: JPG, PNG, atau GIF. Maksimal 5MB.
+          </p>
+        </div>
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">

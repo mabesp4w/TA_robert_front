@@ -56,6 +56,7 @@ export interface DiseaseScore {
   gejala_umum?: string;
   pengobatan?: string;
   pencegahan?: string;
+  gambar_url?: string | null;
   total_score: number;
   rules_count: number;
   max_activation: number;

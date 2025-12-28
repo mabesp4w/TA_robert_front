@@ -7,11 +7,13 @@ import { useFuzzyCalculationStore } from "@/stores/api/fuzzyCalculationStore";
 import LoadingSpinner from "@/components/UI/LoadingSpinner";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import PemeriksaanSapiDetailInfo from "@/components/pages/PemeriksaanSapi/PemeriksaanSapiDetailInfo";
 import { FuzzificationStep } from "@/components/Fuzzy/FuzzificationStep";
 import { InferenceStep } from "@/components/Fuzzy/InferenceStep";
 import { DefuzzificationStep } from "@/components/Fuzzy/DefuzzificationStep";
 import { DiseaseConclusion } from "@/components/Fuzzy/DiseaseConclusion";
+import { pemeriksaanSapiCRUD } from "@/services/crudService";
 import toast from "react-hot-toast";
 
 export default function PemeriksaanPemilikDetailPage({
@@ -34,6 +36,7 @@ export default function PemeriksaanPemilikDetailPage({
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"detail" | "fuzzy">("detail");
   const [fuzzyCalculated, setFuzzyCalculated] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     if (params.id) {
@@ -76,6 +79,43 @@ export default function PemeriksaanPemilikDetailPage({
     setFuzzyCalculated(false);
     setCurrentStep(1);
     toast("Calculation reset");
+  };
+
+  const handleExportPdf = async () => {
+    if (!currentPemeriksaanSapi) {
+      toast.error("Data pemeriksaan tidak tersedia");
+      return;
+    }
+
+    setDownloading(true);
+    try {
+      const blob = await pemeriksaanSapiCRUD.exportPdf(params.id);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename
+      const sapiName = currentPemeriksaanSapi.sapi_detail?.nm_sapi || `Sapi_${params.id.slice(0, 8)}`;
+      const tglPemeriksaan = new Date(currentPemeriksaanSapi.tgl_pemeriksaan)
+        .toISOString()
+        .replace(/[:.]/g, '-')
+        .slice(0, 16);
+      link.download = `Laporan_Pemeriksaan_${sapiName}_${tglPemeriksaan}.pdf`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("PDF berhasil diunduh");
+    } catch (error: any) {
+      console.error("Error exporting PDF:", error);
+      toast.error(error.response?.data?.message || "Gagal mengunduh PDF");
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const steps = [
@@ -131,7 +171,23 @@ export default function PemeriksaanPemilikDetailPage({
             Kembali
           </button>
           <h1 className="text-3xl font-bold">Detail Pemeriksaan Sapi</h1>
-          <div></div>
+          <button
+            onClick={handleExportPdf}
+            disabled={downloading || !currentPemeriksaanSapi}
+            className="btn btn-primary btn-sm"
+          >
+            {downloading ? (
+              <>
+                <span className="loading loading-spinner loading-sm"></span>
+                Mengunduh...
+              </>
+            ) : (
+              <>
+                <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
+                Unduh PDF
+              </>
+            )}
+          </button>
         </div>
 
         {/* Tabs */}

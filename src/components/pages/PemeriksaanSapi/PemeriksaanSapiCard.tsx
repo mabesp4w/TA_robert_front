@@ -10,6 +10,7 @@ import {
   ThermometerIcon,
   ActivityIcon,
   ClockIcon,
+  Download,
 } from "lucide-react";
 import moment from "moment";
 
@@ -18,6 +19,8 @@ interface PemeriksaanSapiCardProps {
   onView?: (pemeriksaan: PemeriksaanSapi) => void;
   onEdit?: (pemeriksaan: PemeriksaanSapi) => void;
   onDelete?: (pemeriksaan: PemeriksaanSapi) => void;
+  onExport?: () => void;
+  isExporting?: boolean;
 }
 
 const PemeriksaanSapiCard = ({
@@ -25,6 +28,8 @@ const PemeriksaanSapiCard = ({
   onView,
   onEdit,
   onDelete,
+  onExport,
+  isExporting = false,
 }: PemeriksaanSapiCardProps) => {
   // Helper function untuk kondisi fisik (number values)
   const getKondisiFisikLabel = (value: number, type: string): string => {
@@ -386,6 +391,21 @@ const PemeriksaanSapiCard = ({
 
         {/* Action Buttons */}
         <div className="card-actions justify-end mt-4">
+          {onExport && (
+            <button
+              onClick={onExport}
+              disabled={isExporting}
+              className="btn btn-sm btn-outline btn-success"
+              title="Unduh PDF"
+            >
+              {isExporting ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+            </button>
+          )}
+
           {onView && (
             <button
               onClick={() => onView(pemeriksaan)}

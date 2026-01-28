@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { toast } from "react-hot-toast";
 import { JenisPenyakit } from "@/types";
 import { jenisPenyakitCRUD } from "@/services/crudService";
+import { extractErrorMessage, showErrorToast } from "@/utils/errorHandler";
 
 interface JenisPenyakitState {
   jenisPenyakit: JenisPenyakit[];
@@ -44,10 +45,9 @@ export const useJenisPenyakitStore = create<JenisPenyakitState>((set) => ({
         loading: false,
       });
     } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message || "Failed to fetch jenis penyakit";
+      const errorMessage = extractErrorMessage(error, "Gagal mengambil data jenis penyakit");
       set({ error: errorMessage, loading: false });
-      toast.error(errorMessage);
+      showErrorToast(error, "Gagal mengambil data jenis penyakit");
     }
   },
 
@@ -82,17 +82,13 @@ export const useJenisPenyakitStore = create<JenisPenyakitState>((set) => ({
       }
     } catch (error: any) {
       console.error("Error fetching jenis penyakit:", error);
-      const errorMessage =
-        error.response?.data?.message || 
-        error.response?.data?.detail ||
-        error.message ||
-        "Gagal mengambil data jenis penyakit";
+      const errorMessage = extractErrorMessage(error, "Gagal mengambil data jenis penyakit");
       set({ 
         error: errorMessage, 
         loading: false,
         currentJenisPenyakit: null 
       });
-      toast.error(errorMessage);
+      showErrorToast(error, "Gagal mengambil data jenis penyakit");
     }
   },
 
@@ -107,13 +103,12 @@ export const useJenisPenyakitStore = create<JenisPenyakitState>((set) => ({
         loading: false,
       }));
 
-      toast.success("Bird created successfully");
+      toast.success("Data berhasil ditambahkan");
       return newBird;
     } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message || "Failed to create jenis penyakit";
+      const errorMessage = extractErrorMessage(error, "Gagal membuat jenis penyakit");
       set({ error: errorMessage, loading: false });
-      toast.error(errorMessage);
+      showErrorToast(error, "Gagal membuat jenis penyakit");
       return null;
     }
   },
@@ -135,13 +130,12 @@ export const useJenisPenyakitStore = create<JenisPenyakitState>((set) => ({
         loading: false,
       }));
 
-      toast.success("Bird updated successfully");
+      toast.success("Data berhasil diperbarui");
       return updatedBird;
     } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message || "Failed to update jenis penyakit";
+      const errorMessage = extractErrorMessage(error, "Gagal memperbarui jenis penyakit");
       set({ error: errorMessage, loading: false });
-      toast.error(errorMessage);
+      showErrorToast(error, "Gagal memperbarui jenis penyakit");
       return null;
     }
   },
@@ -162,13 +156,12 @@ export const useJenisPenyakitStore = create<JenisPenyakitState>((set) => ({
         loading: false,
       }));
 
-      toast.success("Bird deleted successfully");
+      toast.success("Data berhasil dihapus");
       return true;
     } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message || "Failed to delete jenis penyakit";
+      const errorMessage = extractErrorMessage(error, "Gagal menghapus jenis penyakit");
       set({ error: errorMessage, loading: false });
-      toast.error(errorMessage);
+      showErrorToast(error, "Gagal menghapus jenis penyakit");
       return false;
     }
   },

@@ -2,6 +2,7 @@
 // jenis penyakit form
 import { useForm } from "react-hook-form";
 import FormInput from "@/components/Forms/FormInput";
+import FormTextarea from "@/components/Forms/FormTextarea";
 import FormSelect from "@/components/Forms/FormSelect";
 import { useJenisPenyakitStore } from "@/stores/crud/JenisPenyakitStore";
 import { JenisPenyakit } from "@/types";
@@ -129,53 +130,49 @@ const JenisPenyakitForm = ({
         error={errors.tingkat_bahaya?.message}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormInput
-          label="Gejala Umum"
-          type="text"
-          required
-          placeholder="Gejala umum"
-          {...register("gejala_umum", {
-            required: "Gejala umum harus diisi",
-          })}
-          error={errors.gejala_umum?.message}
-        />
+      <FormTextarea
+        label="Gejala Umum"
+        required
+        placeholder="Masukkan gejala umum"
+        rows={3}
+        {...register("gejala_umum", {
+          required: "Gejala umum harus diisi",
+        })}
+        error={errors.gejala_umum?.message}
+      />
 
-        <FormInput
-          label="Pengobatan"
-          type="text"
-          required
-          placeholder="Pengobatan"
-          {...register("pengobatan", {
-            required: "Pengobatan harus diisi",
-          })}
-          error={errors.pengobatan?.message}
-        />
-      </div>
+      <FormTextarea
+        label="Pengobatan"
+        required
+        placeholder="Masukkan informasi pengobatan"
+        rows={3}
+        {...register("pengobatan", {
+          required: "Pengobatan harus diisi",
+        })}
+        error={errors.pengobatan?.message}
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormInput
-          label="Pencegahan"
-          type="text"
-          required
-          placeholder="Pencegahan"
-          {...register("pencegahan", {
-            required: "Pencegahan harus diisi",
-          })}
-          error={errors.pencegahan?.message}
-        />
+      <FormTextarea
+        label="Pencegahan"
+        required
+        placeholder="Masukkan informasi pencegahan"
+        rows={3}
+        {...register("pencegahan", {
+          required: "Pencegahan harus diisi",
+        })}
+        error={errors.pencegahan?.message}
+      />
 
-        <FormInput
-          label="Deskripsi"
-          type="text"
-          required
-          placeholder="Deskripsi"
-          {...register("deskripsi", {
-            required: "Deskripsi harus diisi",
-          })}
-          error={errors.deskripsi?.message}
-        />
-      </div>
+      <FormTextarea
+        label="Deskripsi"
+        required
+        placeholder="Masukkan deskripsi penyakit"
+        rows={4}
+        {...register("deskripsi", {
+          required: "Deskripsi harus diisi",
+        })}
+        error={errors.deskripsi?.message}
+      />
 
       {/* Image Upload */}
       <div className="space-y-2">
